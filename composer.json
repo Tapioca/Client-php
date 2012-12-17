@@ -2,7 +2,7 @@
     "name": "Tapioca/Client-php"
   , "type": "library"
   , "description": "Tapioca PHP client"
-  , "keywords": ["Tapioca"]
+  , "keywords": ["Tapioca", "MongoDb", "CMS"]
   , "homepage": "http://tapiocapp.com"
   , "repository": "https://github.com/Tapioca/Client-php"
   , "license": "MIT"
@@ -25,6 +25,6 @@
   , "require": {
         "php": ">=5.3.3"
       , "shuber/curl": "dev-master"
-      ,  "alexbilbie/mongoqb": "*"
+      , "alexbilbie/mongoqb": "*"
     }
 }

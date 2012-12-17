@@ -41,11 +41,11 @@ Complet configuration array:
 	);
 ```
 
-Rest need `curl` to be enable.
+Rest need `curl` to be enable. Cache path need to be writable.
 
 ## Query
 
-You can query your collection by passing an array to the `query`method or use the assignation methods.
+You can query your collections by passing an array to the `query`method or use the assignation methods.
 
 ```php
 	$instance = Tapioca::client( 'rest', $config );
@@ -55,6 +55,7 @@ You can query your collection by passing an array to the `query`method or use th
 				'where'  => array('title' => 'hello')
 			));
 
+	$query->select(array('title' => 'hello')); // override 
 	$query->order('title', 'DESC');
 
 	$results = $query->get();
