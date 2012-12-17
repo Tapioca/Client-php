@@ -6,7 +6,7 @@ This page is a draft of upcoming Tapioca's client in PHP. Feel free to contribut
 
 Dedicated machine with root access is recommended. PHP 5.3.3 (or higher) is required.
 
-## Installation & Configuration
+## Installation
 
 Installation using Composer:
 
@@ -17,6 +17,8 @@ Installation using Composer:
 	    }
 	}
 ```
+
+## Configuration
 
 Complet configuration array:
 
@@ -32,21 +34,22 @@ Complet configuration array:
 			'user' => 'YOUR_USER_NAME',
 			'pass' => 'YOUR_PASSWORD',
 		),
-		'cache'  => 3600
+		'cache'  => array(
+			'ttl'  => 3600,
+			'path' => '/path/to/folder',
+		)
 	);
 ```
 
-Access to instance:
-
-```php
-	$instance = Tapioca::client( 'rest', $config );
-```
+Rest need `curl` to be enable.
 
 ## Query
 
 You can query your collection by passing an array to the `query`method or use the assignation methods.
 
 ```php
+	$instance = Tapioca::client( 'rest', $config );
+
 	$query = $instance->query( array(
 				'select' => array('title', 'bio')
 				'where'  => array('title' => 'hello')
