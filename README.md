@@ -49,7 +49,7 @@ You can query your collection by passing an array to the `query`method or use th
 ```php
 	$query = $instance->query( array(
 				'select' => array('title', 'bio')
-				'where   => array('title' => 'hello')
+				'where'  => array('title' => 'hello')
 			));
 
 	$query->order('title', 'DESC');
