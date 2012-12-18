@@ -35,7 +35,7 @@
     ]
   , "require": {
         "php": ">=5.3.3"
-      , "hamstar/curl": "dev-master"
+      , "shuber/curl": "dev-master"
       , "alexbilbie/mongoqb": "dev-master"
       , "ext-curl": "*"
     }
