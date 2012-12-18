@@ -23,9 +23,20 @@
           , "Tapioca": "src"
         }
     }
+  , "repositories": [
+      {
+          "type": "vcs",
+          "url": "http://github.com/hamstar/curl"
+      },
+      {
+          "type": "vcs",
+          "url": "http://github.com/alexbilbie/mongoqb"
+      }
+    ]
   , "require": {
         "php": ">=5.3.3"
-      , "shuber/curl": "dev-master"
-      , "alexbilbie/mongoqb": "*"
+      , "hamstar/curl": "dev-master"
+      , "alexbilbie/mongoqb": "dev-master"
+      , "ext-curl": "*"
     }
 }

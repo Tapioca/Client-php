@@ -13,7 +13,7 @@ Installation using Composer:
 ```json
 	{
 	    "require": {
-	        "Tapioca/Client-php": "dev"
+	        "tapioca/client-php": "dev-master"
 	    }
 	}
 ```
