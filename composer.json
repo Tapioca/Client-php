@@ -1,5 +1,5 @@
 {
-    "name": "Tapioca/Client-php"
+    "name": "tapioca/client-php"
   , "type": "library"
   , "description": "Tapioca PHP client"
   , "keywords": ["Tapioca", "MongoDb", "CMS"]
