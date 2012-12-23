@@ -4,19 +4,39 @@ This page is a draft of upcoming Tapioca's client in PHP. Feel free to contribut
 
 ## Requirements
 
-Dedicated machine with root access is recommended. PHP 5.3.3 (or higher) is required.
+Dedicated machine with root access is recommended. PHP 5.3 (or higher) is required.
 
-## Installation
+## Installing via Composer
 
-Installation using Composer:
+The recommended way to install Tapioca's PHP Clieny is through [Composer](http://getcomposer.org).
+
+1. Add ``tapioca/client-php`` as a dependency in your project's ``composer.json`` file:
 
 ```json
-	{
-	    "require": {
-	        "tapioca/client-php": "dev-master"
-	    }
-	}
+    {
+        "require": {
+            "tapioca/client-php": "dev-master"
+        }
+    }
 ```
+
+
+2. Download and install Composer:
+
+        curl -s http://getcomposer.org/installer | php
+
+3. Install your dependencies:
+
+        php composer.phar install
+
+4. Require Composer's autoloader
+
+    Composer also prepares an autoload file that's capable of autoloading all of the classes in any of the libraries that it downloads. To use it, just add the following line to your code's bootstrap process:
+
+        require 'vendor/autoload.php';
+
+You can find out more on how to install Composer, configure autoloading, and other best-practices for defining dependencies at [getcomposer.org](http://getcomposer.org).
+
 
 ## Configuration
 
@@ -24,10 +44,12 @@ Complet configuration array:
 
 ```php
 	$config = array(
+		'driver' => 'rest',
 		'slug'   => 'acme',
 		'server' => 'tapiocapp.com',
 		'object' => true,
 		'rest'   => array(
+			'https'        => true,
 			'clientId'     => 'YOUR_CLIENT_ID',
 			'clientSecret' => 'YOUR_CLIENT_SECRET',
          ),
