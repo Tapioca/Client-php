@@ -16,7 +16,7 @@ namespace Tapioca;
 
 use \Tapioca\MongoQB;
 
-class Driver_Mongo extends \Tapioca\Driver
+class Driver_MongoDB extends \Tapioca\Driver
 {
     /**
      * @var  MongoDB Query Builder Object
@@ -66,8 +66,6 @@ class Driver_Mongo extends \Tapioca\Driver
         static::$qb = new MongoQB(array(
             'dsn'   =>  trim( $dsn )
         ));
-
-        $this->reset();
     }
 
     /**
