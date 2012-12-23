@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Tapioca: Schema Driven Data Engine for FuelPHP.
+ * Tapioca: Schema Driven Data Engine
+ * PHP Client.
  *
  * @package   Tapioca
  * @version   v0.2
@@ -13,7 +14,7 @@
 
 namespace Tapioca;
 
-class Driver_Rest
+class Driver_Rest extends \Tapioca\Driver
 {
 
 }

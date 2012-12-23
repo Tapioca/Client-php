@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Tapioca: Schema Driven Data Engine for FuelPHP.
+ * Tapioca: Schema Driven Data Engine 
+ * PHP Client.
  *
  * @package   Tapioca
  * @version   v0.2
@@ -17,6 +18,7 @@ namespace Tapioca;
 * @codeCoverageIgnore
 */
 class Exception extends \Exception {}
+class TapiocaException extends \Exception {}
 
 class Client 
 {
@@ -38,24 +40,36 @@ class Client
     /**
      * Create Client object
      *
-     *     // Load the REST client
-     *     $client = Tapioca::client('Rest', 'acme');
-     *
-     * @param   string    Connection mode (Rest|Mongo)
-     * @param   string    Identifier for this client's app
+     * @param   string    Identifier for this client's instence
      * @param   array     Configuration array
      * @return  Fieldset
      */
-    public static function client( $driver = 'mongo', $name = 'default', array $config)
+    public static function client( $name = 'default', $config = array() )
     {
+        if( is_array( $name ) )
+        {
+            $config = $name;
+            $name   = 'default';
+        }
+
         if ( $exists = static::instance( $name ) )
         {
             return $exists;
         }
 
-        $class = 'Tapioca\\Drivers_'.$driver;
+        if( !isset( $config['driver'] ) || empty($config['driver'] ) )
+        {
+            throw new Exception('No Tapioca driver given.');            
+        }
 
-        static::$_instances[ $name ] = new $class($name, $config);
+        $driver = 'Tapioca\\Driver_'.$config['driver'];
+
+        if( ! class_exists($driver, true))
+        {
+            throw new Exception('Could not find Tapioca driver: '.$config['driver']. ' ('.$driver.')');
+        }
+
+        static::$_instances[ $name ] = new $driver( $config );
 
         if ( $name == 'default' )
         {
@@ -69,7 +83,7 @@ class Client
     /**
      * Return a specific instance, or the default instance (is created if necessary)
      *
-     * @param   string  driver id
+     * @param   string  instance name
      * @return  Tapioca
      */
     public static function instance( $instance = 'default' )
@@ -82,11 +96,4 @@ class Client
 
         return static::$_instances[ $instance ];
     }
-
-    /**
-     * Abstracts
-     */
-
-    abstract public function find( $options );
-    abstract protected function format( $results );
 }

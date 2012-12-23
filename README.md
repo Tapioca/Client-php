@@ -26,13 +26,16 @@ Complet configuration array:
 	$config = array(
 		'slug'   => 'acme',
 		'server' => 'tapiocapp.com',
+		'object' => true,
 		'rest'   => array(
-             'clientId'     => 'YOUR_CLIENT_ID',
-             'clientSecret' => 'YOUR_CLIENT_SECRET',
+			'clientId'     => 'YOUR_CLIENT_ID',
+			'clientSecret' => 'YOUR_CLIENT_SECRET',
          ),
 		'mongo'  => array(
-			'user' => 'YOUR_USER_NAME',
-			'pass' => 'YOUR_PASSWORD',
+			'username' => 'YOUR_USER_NAME',
+			'password' => 'YOUR_PASSWORD',
+			'database' => 'acme',
+			'port'     => 27017,
 		),
 		'cache'  => array(
 			'ttl'  => 3600,
@@ -50,13 +53,19 @@ You can query your collections by passing an array to the `query`method or use t
 ```php
 	$instance = Tapioca::client( 'rest', $config );
 
-	$query = $instance->query( array(
-				'select' => array('title', 'bio')
-				'where'  => array('title' => 'hello')
-			));
+	$instance->query( array(
+			'select' => array('name', 'desc'),
+			'where'  => array('category' => 'TV')
+		));
 
-	$query->select(array('title' => 'hello')); // override 
-	$query->order('title', 'DESC');
+	$results = $instance->get('products');
 
-	$results = $query->get();
+```
+
+Ask `title` field of `products`'s document, _ref `508278e811a3`, in english.
+
+```php
+    $instance->set('select', array('title') );
+    $instance->locale('en_UK');
+    print_r( $instance->document('products', '508278e811a32') );
 ```
