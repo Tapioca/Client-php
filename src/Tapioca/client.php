@@ -18,7 +18,6 @@ namespace Tapioca;
 * @codeCoverageIgnore
 */
 class Exception extends \Exception {}
-class TapiocaException extends \Exception {}
 
 class Client 
 {
@@ -45,7 +44,7 @@ class Client
      * @return  Fieldset
      */
     public static function client( $name = 'default', $config = array() )
-    {
+    {        
         if( is_array( $name ) )
         {
             $config = $name;
@@ -59,7 +58,7 @@ class Client
 
         if( !isset( $config['driver'] ) || empty($config['driver'] ) )
         {
-            throw new Exception('No Tapioca driver given.');            
+            throw new Exception('No Tapioca driver given.');
         }
 
         $driver = 'Tapioca\\Driver_'.$config['driver'];
@@ -68,6 +67,35 @@ class Client
         {
             throw new Exception('Could not find Tapioca driver: '.$config['driver']. ' ('.$driver.')');
         }
+
+        // Default config
+        // DO NOT EDIT
+        $_defaults = array( 
+            'driver'      => 'rest', 
+            'slug'        => false,
+            'server'      => false,
+            'object'      => false,
+            'collections' => array(
+                'apps'         => 'apps',
+                'previews'     => 'previews',
+            ),
+            'rest'        => array(
+                'clientId'     => false,
+                'clientSecret' => false,
+            ),
+            'mongo'       => array(
+                'username'     => false,
+                'password'     => false,
+                'database'     => false,
+                'port'         => 27017,
+            ),
+            'cache'      => array(
+                'ttl'          => 3600,
+                'path'         => false,
+            ),
+        );
+
+        static::config( $config, $_defaults );
 
         static::$_instances[ $name ] = new $driver( $config );
 
@@ -95,5 +123,34 @@ class Client
         }
 
         return static::$_instances[ $instance ];
+    }
+
+    /**
+     * Deep merge of default config with user config
+     * $a will be result. $a will be edited. 
+     * It's to avoid a lot of copying in recursion
+     *
+     * @param   array    user settings
+     * @param   array    default config
+     * @return  Tapioca
+     */
+    private static function config( &$a, $b )
+    { 
+        foreach( $b as $child => $value )
+        {
+            if( isset( $a[$child] ) )
+            { 
+                // merge if they are both arrays
+                if( is_array( $a[ $child ] ) && is_array( $value ) )
+                {
+                    static::config( $a[ $child ], $value );
+                }
+            }
+            else
+            {
+                 // add if not exists
+                $a[ $child ] = $value;
+            }
+        }
     }
 }

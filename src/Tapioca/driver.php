@@ -45,22 +45,59 @@ abstract class Driver
     public function commun( $config )
     {
         $this->_config = $config;
-        $this->_slug   = $config['slug'];
 
-        $this->object  = ( isset( $config['object'] ) && $config['object'] );
-
-        if( isset( $config['collection']['app'] )  && !empty( $config['collection']['app'] ))
+        // Application Slug - required
+        if( !$config['slug'] || empty( $config['slug'] ))
         {
-            static::$appCollection = $config['collection']['app'];
+            throw new Exception("You must provid your Application's slug");
         }
 
-        if( isset( $config['collection']['preview'] )  && !empty( $config['collection']['preview'] ))
+        $this->_slug   = $config['slug'];
+
+        // sould we return object or array (default php mongodb driver behavior)
+        $this->_object  = ( isset( $config['object'] ) && $config['object'] );
+
+        // set cache config
+        if( is_array( $config['cache'] ) && $config['cache']['path'] )
         {
-            static::$previewCollection = $config['collection']['preview'];
+            try
+            {
+                //Make sure it exists and is writeable  
+                $this->_cache  = new Cache( $config['cache']['path'] );
+            }
+            catch( TapiocaCacheException $e )
+            {
+                throw new Exception( $e->getMessage() );
+            }
+        }
+
+        if( !is_array( $config['collections'] ) )
+        {
+            throw new Exception('Collections name must be an array');
+        }
+
+        // Set `apps` collection name
+        if( isset( $config['collections']['apps'] ) && !empty( $config['collections']['apps'] ))
+        {
+            static::$appCollection = $config['collections']['apps'];
+        }
+        else
+        {
+            throw new Exception('Apps collections name must be provided');
+        }
+
+        // Set `previews` collection name
+        if( isset( $config['collections']['previews'] )  && !empty( $config['collections']['previews'] ))
+        {
+            static::$previewCollection = $config['collections']['previews'];
+        }
+        else
+        {
+            throw new Exception('Previews collections name must be provided');
         }
 
         // allow to pass app's data via config
-        // use in shared environment
+        // usefull in shared environment/reduce remote query
         if( isset( $config['app'] ) && is_array( $config['app'] ))
         {
             $this->_app = $config['app'];
@@ -85,7 +122,7 @@ abstract class Driver
     /**
      * @var  string  Collection name
      */
-    protected $_collection;
+    // protected $_collection;
 
     /**
      * @var  array  Document information
@@ -98,12 +135,17 @@ abstract class Driver
     protected $_ref;
 
     /**
+     * @var  object  Cache class instance
+     */
+    protected $_cache = false;
+
+    /**
      * @var  array  Allowed operators
      */
     protected static $operators = array('select', 'where', 'sort', 'limit', 'skip');
 
     /**
-     * @var  string  Query arguments
+     * @var  array|int  Query arguments
      */
     protected $_select;
     protected $_where;
@@ -111,17 +153,20 @@ abstract class Driver
     protected $_limit;
     protected $_skip;
 
+    /**
+     * @var  array  Store the last query settings
+     */
     protected $_queryLog;
 
     /**
-     * @var  array  Preview Collection
+     * @var  string  Preview Collection
      */
-    protected static $previewCollection = 'previews';
+    protected static $previewCollection;
 
     /**
-     * @var  array  App Collection
+     * @var  string  App Collection
      */
-    protected static $appCollection = 'apps';
+    protected static $appCollection;
 
     /**
      * Magic get method to allow getting class properties but still having them protected
@@ -159,16 +204,24 @@ abstract class Driver
         $this->_skip       = 0;
     }
 
-    public function collection( $collection )
-    {
-        if( !empty( $collection ) )
-        {
-            $this->_collection = $collection;
+    // public function collection( $collection )
+    // {
+    //     if( !empty( $collection ) )
+    //     {
+    //         $this->_collection = $collection;
             
-            return $this;
-        }
-    }
+    //         return $this;
+    //     }
+    // }
 
+    /**
+     * Get Document
+     *
+     * @access   public
+     * @param    string     Collection name
+     * @param    string     Document ID
+     * @return   object|array
+     */
     public function document( $collection, $ref )
     {
         if( !empty( $ref ) && !empty( $collection ) )
@@ -186,6 +239,14 @@ abstract class Driver
         return false;
     }
 
+
+    /**
+     * Document locale shortcuts
+     *
+     * @access   public
+     * @param    string    locale key
+     * @return   void
+     */
     public function locale( $locale )
     {
         if( !empty( $locale ) )
@@ -196,6 +257,13 @@ abstract class Driver
         }
     }
 
+    /**
+     * Document revision shortcuts
+     *
+     * @access   public
+     * @param    int    revision ID
+     * @return   void
+     */
     public function revision( $revision )
     {
         if( !empty( $revision ) )
@@ -206,6 +274,13 @@ abstract class Driver
         }
     }
 
+    /**
+     * Document status shortcuts
+     *
+     * @access   public
+     * @param    int
+     * @return   void
+     */
     public function status( $status )
     {
         if( !empty( $status ) && is_numeric( $status ) )
@@ -216,6 +291,12 @@ abstract class Driver
         }
     }
 
+    /**
+     * Get App default locale key
+     *
+     * @access   public
+     * @return   void
+     */
     public function defaultLocale()
     {
         $locales = $this->app('locales');
@@ -255,6 +336,11 @@ abstract class Driver
         return $this;
     }
     
+    /**
+     * Add elements from Query operator
+     *
+     * @return  void
+     */
     protected function _set( $operator, $value )
     {
         if( in_array( $operator, self::$operators ) )
@@ -279,6 +365,11 @@ abstract class Driver
         }
     }
 
+    /**
+     * Remove elements from Query operator
+     *
+     * @return  void
+     */
     protected function _unset( $operator, $key )
     {
         $operator = '_'.$operator;
@@ -292,6 +383,12 @@ abstract class Driver
         }
     }
 
+    /**
+     * Merge User query settings with 
+     * Tapioca required fields
+     *
+     * @return  void
+     */
     protected function _get()
     {
         $this->query('where', array(
@@ -327,6 +424,31 @@ abstract class Driver
             $tmp = array_merge( $this->_select, array('_ref') );
             $this->query('select', $tmp);
         }
+
+    }
+
+    /**
+     * Merge App's slug + collection name + query
+     * to get an unique MD5 hash as cache key
+     *
+     * @param   string     Collection name
+     * @return  string
+     */
+    protected function cacheKey( $collection )
+    {
+        $query = array(
+            'select'    => $this->_select,
+            'where'     => $this->_where,
+            'limit'     => $this->_limit,
+            'skip'      => $this->_skip,
+            'sort'      => $this->_sort,
+        );
+
+        return md5( $this->_slug + $collection + serialize( $query ) );
+    }
+
+    public function clearCache()
+    {
 
     }
 

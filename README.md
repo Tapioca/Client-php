@@ -67,5 +67,5 @@ Ask `title` field of `products`'s document, _ref `508278e811a3`, in english.
 ```php
     $instance->set('select', array('title') );
     $instance->locale('en_UK');
-    print_r( $instance->document('products', '508278e811a32') );
+    $instance->document('products', '508278e811a32');
 ```
