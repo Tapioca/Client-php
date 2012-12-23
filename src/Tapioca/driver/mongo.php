@@ -111,6 +111,11 @@ class Driver_Mongo extends \Tapioca\Driver
      */
     public function get( $collection = null )
     {
+        if( is_null( $collection ))
+        {
+            throw new Exception( 'In order to retrieve documents from Tapioca, a collection name must be passed' );
+        }
+
         // true collection name
         $collection = $this->_slug.'-'.$collection;
 
@@ -120,7 +125,7 @@ class Driver_Mongo extends \Tapioca\Driver
         }
         catch(Exception $e )
         {
-            throw new \Tapioca\Exception( $e->getMessage() );
+            throw new Exception( $e->getMessage() );
         }
 
         // ask from cache

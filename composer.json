@@ -26,10 +26,6 @@
   , "repositories": [
       {
           "type": "vcs",
-          "url": "http://github.com/hamstar/curl"
-      },
-      {
-          "type": "vcs",
           "url": "http://github.com/alexbilbie/mongoqb"
       }
     ]

@@ -44,7 +44,7 @@ class Client
      * @return  Fieldset
      */
     public static function client( $name = 'default', $config = array() )
-    {        
+    {
         if( is_array( $name ) )
         {
             $config = $name;

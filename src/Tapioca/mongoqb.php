@@ -17,10 +17,9 @@ namespace Tapioca;
 /**
  *
  * Extends Alex Bilbie's Mongo Query Builder 
- * with `hash`method
+ * with `hash` method
  *
  */
-
 
 class MongoQB extends \MongoQB\Builder
 {
