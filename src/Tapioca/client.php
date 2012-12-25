@@ -80,6 +80,7 @@ class Client
                 'previews'     => 'previews',
             ),
             'rest'        => array(
+                'https'        => true,
                 'clientId'     => false,
                 'clientSecret' => false,
             ),

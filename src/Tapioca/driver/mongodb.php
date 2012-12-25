@@ -32,7 +32,7 @@ class Driver_MongoDB extends \Tapioca\Driver
      */
     public function __construct( $config )
     {
-        $this->_driver = 'MongoDB';
+        $this->_driver = self::MONGODB;
         $this->commun( $config );
         
         $dsn = "mongodb://";
@@ -101,84 +101,57 @@ class Driver_MongoDB extends \Tapioca\Driver
     }
 
     /**
-     * Get Document based on query
-     *
-     * @access public
      * @param  string   collection name
      * @return object
      */
-    public function get( $collection = null )
+    protected function getMongoDB( $collection )
     {
-        if( is_null( $collection ))
-        {
-            throw new Exception( 'In order to retrieve documents from Tapioca, a collection name must be passed' );
-        }
-
         // true collection name
         $collection = $this->_slug.'-'.$collection;
 
-        try
+        if( is_null( $this->_ref ) )
         {
-            $this->_get();
-        }
-        catch(Exception $e )
-        {
-            throw new Exception( $e->getMessage() );
-        }
+            // query MongoDb
+            $hash = static::$qb
+                            ->select( $this->_select )
+                            ->where( $this->_where )
+                            ->orderBy( $this->_sort )
+                            ->limit( $this->_limit )
+                            ->offset( $this->_skip )
+                            ->hash( $collection );
 
-        // ask from cache
-        if( $this->_cache )
-        {
-            $key   = $this->cacheKey( $collection );
-
-            $cache = $this->_cache->get( $key, $this->_config['cache']['ttl'] );
-
-            if( $cache )
+            // format document as object
+            if( $this->_object )
             {
-
-                $this->reset();
-
-                return $cache;
+                $hash->results = $this->format( $hash->results );
             }
+
+            return $hash;
         }
-
-        // query MongoDb
-        $hash = static::$qb
-                        ->select( $this->_select )
-                        ->where( $this->_where )
-                        ->orderBy( $this->_sort )
-                        ->limit( $this->_limit )
-                        ->offset( $this->_skip )
-                        ->hash( $collection );
-
-        // reset query
-        $this->reset();
-
-        // format document as object
-        if( $this->_object )
+        else
         {
-            $hash->results = $this->format( $hash->results );
+            $ret =  static::$qb
+                            ->select( $this->_select )
+                            ->where( $this->_where )
+                            ->get( $collection );
+
+            if( count( $ret ) == 1 )
+            {
+                unset( $ret[0]['_id'] );
+
+                $ret = $ret[0];
+
+                // format document as object
+                if( $this->_object )
+                {
+                    $ret = $this->format( $ret );
+                }
+
+                return $ret;
+            }
+
+            return false;
         }
-
-        // store results to cache
-        if( $this->_cache )
-        {
-            $this->_cache->set( $key, $hash );
-        }
-
-        return $hash;
-    }
-
-
-    /**
-     * format array as object
-     *
-     * @param  array   document array
-     * @return object
-     */
-    protected function format( $results )
-    {
-        return json_decode( json_encode( $results ) );
     }
 
     /**

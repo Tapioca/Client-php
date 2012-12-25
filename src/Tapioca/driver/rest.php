@@ -14,7 +14,151 @@
 
 namespace Tapioca;
 
+use \Guzzle\Http\Client as GuzzleClient;
+
 class Driver_Rest extends \Tapioca\Driver
 {
+    /**
+     * @var  Guzzle Query Builder Object
+     */
+    private static $qb;
 
+    /**
+     * Constructor
+     *
+     * @access public
+     * @param  array   Configuration Array
+     * @return void
+     */
+    public function __construct( $config )
+    {
+        $this->_driver = self::REST;
+        $this->commun( $config );
+
+        $url  = ( $config['rest']['https'] ) ? 'https' : 'http';
+        $url .= '://';
+
+        if( empty( $config['server'] ) )
+        {
+            throw new Exception( 'The server must be set to connect to Tapioca Rest API' );
+        }
+
+        $url .= $config['server'];
+
+        if( substr( $url, -1 ) != '/')
+        {
+            $url .= '/';
+        }
+
+        $url .= 'api/';
+
+        if( empty( $config['rest']['clientId'] ) )
+        {
+            throw new Exception( 'You must provide your Client Id' );
+        }
+
+        if( empty( $config['rest']['clientSecret'] ) )
+        {
+            throw new Exception( 'You must provide your Secret' );
+        }
+
+        static::$qb = new GuzzleClient( $url, array(
+                            'key' => $config['rest']['clientId']
+                        ) );
+    }
+
+    /**
+     * Get App Data from Database
+     *
+     * @access public
+     * @param  string   property to return
+     * @return array
+     */
+    public function app( $property = null )
+    {
+    }
+
+    /**
+     * @param  string   collection name
+     * @return object
+     */
+    protected function getRest( $collection = null )
+    {
+        // base url
+        $url = $this->_slug . '/document/' . $collection;
+
+        if( is_null( $this->_ref ) )
+        {
+            $query = array(
+                        'q' => json_encode( 
+                                array(
+                                    'select'    => $this->_select,
+                                    'where'     => $this->_where,
+                                    'limit'     => $this->_limit,
+                                    'skip'      => $this->_skip,
+                                    'sort'      => $this->_sort,
+                                ) 
+                        )
+                    );
+    
+            $request = static::$qb->get(array( $url . '{?key,q}', $query));
+
+            // Send the request and get the response
+            $hash = $request->send()->json();
+
+            // format document as object
+            if( $this->_object )
+            {
+                $hash = json_decode( json_encode( $hash ) );
+            }
+
+            return $hash;
+        }
+        else
+        {
+            $url .= '/' . $this->_ref;
+            $arg  = array('l' => null);
+
+            if( isset( $this->_tapioca['locale'] ) )
+            {
+                $arg['l'] = $this->_tapioca['locale'];
+            }
+
+            $request = static::$qb->get( array( $url . '{?key,l}', $arg ) );
+
+            // Send the request and get the response
+            $ret = $request->send()->json();
+
+            // format document as object
+            if( $this->_object )
+            {
+                $ret = json_decode( json_encode( $ret ) );
+            }
+
+            return $ret;
+        }
+
+    }
+
+    /**
+     * format array as object
+     *
+     * @param  array   document array
+     * @return object
+     */
+    protected function format( $results )
+    {
+
+    }
+
+    /**
+     * Ask for a document preview
+     *
+     * @access public
+     * @param  string   preview token
+     * @return object|array
+     */
+    public function preview( $token )
+    {
+    }
 }

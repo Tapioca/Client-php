@@ -17,11 +17,17 @@ namespace Tapioca;
 abstract class Driver
 {
     /**
+     * Driver name
+     */
+    const MONGODB = 'MongoDB';
+    const REST    = 'Rest';
+
+    /**
      * Document status
      */
-    const TAPP_OUTOFDATE = -1;
-    const TAPP_DRAFT     = 1;
-    const TAPP_PUBLISHED = 100;
+    const OUTOFDATE = -1;
+    const DRAFT     = 1;
+    const PUBLISHED = 100;
 
     /**
      * Return Data about last query
@@ -102,6 +108,8 @@ abstract class Driver
         {
             $this->_app = $config['app'];
         }
+
+        $this->reset();
     }
 
     /**
@@ -222,18 +230,18 @@ abstract class Driver
      * @param    string     Document ID
      * @return   object|array
      */
-    public function document( $collection, $ref )
+    public function document( $collection, $ref, $locale = null, $status = null )
     {
         if( !empty( $ref ) && !empty( $collection ) )
         {
             $this->_ref = $ref;
 
-            $hash = $this->get( $collection );
+            return $this->get( $collection );
 
-            if( $hash->total == 1 )
-            {
-                return $hash->results[0];
-            }
+            // if( $hash->total == 1 )
+            // {
+            //     return $hash->results[0];
+            // }
         }
     
         return false;
@@ -384,6 +392,60 @@ abstract class Driver
     }
 
     /**
+     * Get Document based on query
+     *
+     * @access public
+     * @param  string   collection name
+     * @return object
+     */
+    public function get( $collection = null )
+    {
+        if( is_null( $collection ))
+        {
+            throw new Exception( 'In order to retrieve documents from Tapioca, a collection name must be passed' );
+        }
+
+        try
+        {
+            $this->_get();
+        }
+        catch(Exception $e )
+        {
+            throw new Exception( $e->getMessage() );
+        }
+
+        // ask from cache
+        if( $this->_cache )
+        {
+            $key   = $this->cacheKey( $collection );
+
+            $cache = $this->_cache->get( $key, $this->_config['cache']['ttl'] );
+
+            if( $cache )
+            {
+
+                $this->reset();
+
+                return $cache;
+            }
+        }
+
+        // call driver implementation
+        $hash = call_user_func( array( $this, 'get'.$this->_driver ), $collection );
+
+        // reset query
+        $this->reset();
+
+        // store results to cache
+        if( $this->_cache )
+        {
+            $this->_cache->set( $key, $hash );
+        }
+
+        return $hash;
+    }
+
+    /**
      * Merge User query settings with 
      * Tapioca required fields
      *
@@ -452,11 +514,19 @@ abstract class Driver
 
     }
 
+    /**
+     * format array as object
+     *
+     * @param  array   document array
+     * @return object
+     */
+    protected function format( $results )
+    {
+        return json_decode( json_encode( $results ) );
+    }
+
+
     abstract public function app( $property );
-
-    abstract public function get( $options );
-
-    abstract protected function format( $results );
 
     abstract public function preview( $token );
 }
