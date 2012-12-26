@@ -33,7 +33,7 @@ class Driver_MongoDB extends \Tapioca\Driver
     public function __construct( $config )
     {
         $this->_driver = self::MONGODB;
-        $this->commun( $config );
+        $this->init( $config );
         
         $dsn = "mongodb://";
 

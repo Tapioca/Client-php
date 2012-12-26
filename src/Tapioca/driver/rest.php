@@ -33,7 +33,7 @@ class Driver_Rest extends \Tapioca\Driver
     public function __construct( $config )
     {
         $this->_driver = self::REST;
-        $this->commun( $config );
+        $this->init( $config );
 
         $url  = ( $config['rest']['https'] ) ? 'https' : 'http';
         $url .= '://';

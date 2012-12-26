@@ -48,7 +48,7 @@ abstract class Driver
      *
      * @return  void
      */
-    public function commun( $config )
+    public function init( $config )
     {
         $this->_config = $config;
 
@@ -226,16 +226,6 @@ abstract class Driver
         $this->_limit      = 99999;
         $this->_skip       = 0;
     }
-
-    // public function collection( $collection )
-    // {
-    //     if( !empty( $collection ) )
-    //     {
-    //         $this->_collection = $collection;
-            
-    //         return $this;
-    //     }
-    // }
 
     /**
      * Get Document
@@ -595,7 +585,6 @@ abstract class Driver
     {
         return json_decode( json_encode( $results ) );
     }
-
 
     abstract public function app( $property );
 
