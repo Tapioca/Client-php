@@ -100,7 +100,7 @@ class Driver_Rest extends \Tapioca\Driver
                                 ) 
                         )
                     );
-    
+            
             $request = static::$qb->get(array( $url . '{?key,q}', $query));
 
             // Send the request and get the response

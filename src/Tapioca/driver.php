@@ -348,7 +348,71 @@ abstract class Driver
 
         return $this;
     }
-    
+
+    /**
+     * Shortcuts for query('select', ...)
+     *
+     * @access   public
+     * @return   void
+     */
+    public function select( array $value )
+    {
+        $this->query('select', $value);
+        return $this;
+    }
+
+    /**
+     * Shortcuts for query('where', ...)
+     *
+     * @access   public
+     * @return   void
+     */
+    public function where( array $value )
+    {
+        $this->query('where', $value);
+        return $this;
+    }
+
+    /**
+     * Shortcuts for query('sort', ...)
+     *
+     * @access   public
+     * @return   void
+     */
+    public function sort( array $value )
+    {
+        $this->query('sort', $value);
+        return $this;
+    }
+
+    /**
+     * Shortcuts for query('limit', ...)
+     *
+     * @access   public
+     * @return   void
+     */
+    public function limit( $value )
+    {
+        if( is_numeric( $value ))
+            $this->query('limit', $value);
+
+        return $this;
+    }
+
+    /**
+     * Shortcuts for query('skip', ...)
+     *
+     * @access   public
+     * @return   void
+     */
+    public function skip( $value )
+    {
+        if( is_numeric( $value ))
+           $this->query('skip', $value);
+       
+        return $this;
+    }
+
     /**
      * Add elements from Query operator
      *
