@@ -109,7 +109,7 @@ class Driver_Rest extends \Tapioca\Driver
             // format document as object
             if( $this->_object )
             {
-                $hash = json_decode( json_encode( $hash ) );
+                $hash = $this->format( $hash );
             }
 
             return $hash;
@@ -132,7 +132,7 @@ class Driver_Rest extends \Tapioca\Driver
             // format document as object
             if( $this->_object )
             {
-                $ret = json_decode( json_encode( $ret ) );
+                $ret = $this->format( $ret );
             }
 
             return $ret;
@@ -141,14 +141,33 @@ class Driver_Rest extends \Tapioca\Driver
     }
 
     /**
-     * format array as object
+     * Query the library
      *
-     * @param  array   document array
-     * @return object
+     * @param  string   file name
+     * @return object|array
      */
-    protected function format( $results )
+    protected function libraryRest( $filename = null )
     {
+        // base url
+        $url = $this->_slug . '/library';
 
+        if( !is_null( $filename ) )
+        {
+            $url .= '/'.$filename;
+        }
+        
+        $request = static::$qb->get( $url . '{?key}' );
+
+        // Send the request and get the response
+        $result = $request->send()->json();
+
+        // format document as object
+        if( $this->_object )
+        {
+            $result = $this->format( $result );
+        }
+
+        return $result;
     }
 
     /**
@@ -160,5 +179,25 @@ class Driver_Rest extends \Tapioca\Driver
      */
     public function preview( $token )
     {
+        // base url
+        $url = $this->_slug . '/preview/' . $token;
+        
+        $request = static::$qb->get( $url . '{?key}' );
+
+        // Send the request and get the response
+        $result = $request->send()->json();
+
+        if( count( $result ) != 1 )
+        {
+            throw new \Tapioca\Exception( 'Not a valid preview token');
+        }
+
+        // format document as object
+        if( $this->_object && $result )
+        {
+            return $this->format( $result[0] );
+        }
+
+        return $result[0];
     }
 }

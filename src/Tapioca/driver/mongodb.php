@@ -155,6 +155,59 @@ class Driver_MongoDB extends \Tapioca\Driver
     }
 
     /**
+     * Query the library
+     *
+     * @param  string   file name
+     * @return object|array
+     */
+    protected function libraryMongoDB( $filename = null )
+    {
+
+        // Unset document query
+        $this->_unset('where', '_tapioca.status');
+        $this->_unset('where', '_tapioca.locale');
+
+        // base url
+        $url = $this->_slug . '/library/';
+
+        $collection = $this->_slug.'--'.static::$libraryCollection;
+
+        if( !is_null( $filename ) )
+        {
+            $hash =  static::$qb
+                        ->select( array(), array('_id'))
+                        ->getWhere( $collection , array(
+                            'filename' => $filename
+                        ), 1);
+
+            if( count( $hash ) == 1 )
+            {
+                $hash = $hash[0];
+            }
+        }
+        else
+        {
+            // query MongoDb
+            $hash = static::$qb
+                            ->select( $this->_select )
+                            ->where( $this->_where )
+                            ->orderBy( $this->_sort )
+                            ->limit( $this->_limit )
+                            ->offset( $this->_skip )
+                            ->hash( $collection );
+        }
+
+        // format document as object
+        if( $this->_object )
+        {
+            $hash = $this->format( $hash );
+        }
+
+        return $hash;
+
+    }
+
+    /**
      * Ask for a document preview
      *
      * @access public

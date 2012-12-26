@@ -77,6 +77,7 @@ class Client
             'object'      => false,
             'collections' => array(
                 'apps'         => 'apps',
+                'library'      => 'library',
                 'previews'     => 'previews',
             ),
             'rest'        => array(

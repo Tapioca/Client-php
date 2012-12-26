@@ -92,6 +92,16 @@ abstract class Driver
             throw new Exception('Apps collections name must be provided');
         }
 
+        // Set `library` collection name
+        if( isset( $config['collections']['library'] )  && !empty( $config['collections']['library'] ))
+        {
+            static::$libraryCollection = $config['collections']['library'];
+        }
+        else
+        {
+            throw new Exception('Previews collections name must be provided');
+        }
+
         // Set `previews` collection name
         if( isset( $config['collections']['previews'] )  && !empty( $config['collections']['previews'] ))
         {
@@ -175,6 +185,11 @@ abstract class Driver
      * @var  string  App Collection
      */
     protected static $appCollection;
+
+    /**
+     * @var  string  Library Collection
+     */
+    protected static $libraryCollection;
 
     /**
      * Magic get method to allow getting class properties but still having them protected
@@ -387,8 +402,52 @@ abstract class Driver
         {
             unset( $tmp_arr[$key] );
 
-            $this->$$operator = $tmp_arr;
+            $this->$operator = $tmp_arr;
         }
+    }
+
+    /**
+     * Merge User query settings with 
+     * Tapioca required fields
+     *
+     * @return  void
+     */
+    protected function _get()
+    {
+        $this->query('where', array(
+            '_summary'        => array( '$exists' => false ),
+        ));
+
+        // check if locale exists for this document
+        if( isset( $this->_tapioca['locale'] ) )
+        {
+            $this->query('where', array(
+                '_tapioca.locale' => $this->_tapioca['locale']
+            ));
+        }
+
+        // if we define a document ref
+        if( !is_null( $this->_ref ) )
+        {
+            $this->query('where', array('_ref' => $this->_ref));
+
+            // get a specific revison
+            if( isset( $this->_tapioca['revision'] ) )
+            {
+                $this->_unset('_where', '_tapioca.status');
+                $this->_unset('_where', '_tapioca.locale');
+
+                $this->query('where', array( '_tapioca.revision' => $this->_tapioca['revision'] ));
+            }
+        }
+
+        // Always return ref
+        if( count( $this->_select ) != 0 )
+        {
+            $tmp = array_merge( $this->_select, array('_ref') );
+            $this->query('select', $tmp);
+        }
+
     }
 
     /**
@@ -446,47 +505,45 @@ abstract class Driver
     }
 
     /**
-     * Merge User query settings with 
-     * Tapioca required fields
+     * Query the library
      *
-     * @return  void
+     * @access public
+     * @param  string   file name
+     * @return object|array
      */
-    protected function _get()
+    public function library( $filename = null )
     {
-        $this->query('where', array(
-            '_summary'        => array( '$exists' => false ),
-        ));
-
-        // check if locale exists for this document
-        if( isset( $this->_tapioca['locale'] ) )
+        // ask from cache
+        if( $this->_cache )
         {
-            $this->query('where', array(
-                '_tapioca.locale' => $this->_tapioca['locale']
-            ));
-        }
+            // contact for key string
+            $key = $this->_slug + static::$previewCollection;
 
-        // if we define a document ref
-        if( !is_null( $this->_ref ) )
-        {
-            $this->query('where', array('_ref' => $this->_ref));
-
-            // get a specific revison
-            if( isset( $this->_tapioca['revision'] ) )
+            if( !is_null( $filename ) )
             {
-                $this->_unset('where', '_tapioca.status');
-                $this->_unset('where', '_tapioca.locale');
+                $key .= $filename;
+            }
 
-                $this->query('where', array( '_tapioca.revision' => $this->_tapioca['revision'] ));
+            $cache = $this->_cache->get( $key, $this->_config['cache']['ttl'] );
+
+            if( $cache )
+            {
+                return $cache;
             }
         }
 
-        // Always return ref
-        if( count( $this->_select ) != 0 )
+        // call driver implementation
+        $library = call_user_func( array( $this, 'library'.$this->_driver ), $filename );
+
+        // store results to cache
+        if( $this->_cache )
         {
-            $tmp = array_merge( $this->_select, array('_ref') );
-            $this->query('select', $tmp);
+            $this->_cache->set( $key, $library );
         }
 
+        $this->reset();
+
+        return $library;
     }
 
     /**
