@@ -123,7 +123,7 @@ class Driver_MongoDB extends \Tapioca\Driver
             // format document as object
             if( $this->_object )
             {
-                $hash->results = $this->format( $hash->results );
+                $hash = $this->format( $hash );
             }
 
             return $hash;

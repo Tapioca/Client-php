@@ -57,10 +57,12 @@ class MongoQB extends \MongoQB\Builder
 
 
         // hash to return
-        $obj            = new \stdClass;
-        $obj->total     = $total;
-        $obj->skip      = $this->_offset;
-        $obj->limit     = $this->_limit;
+        // use array for REST compilant
+        $hash = array(
+            'total' => $total,
+            'skip'  => $this->_offset,
+            'limit' => $this->_limit,
+        );
 
         // Clear
         $this->_clear($collection, 'get');
@@ -78,9 +80,9 @@ class MongoQB extends \MongoQB\Builder
             }
         }
 
-        $obj->results   = $documents;
+        $hash['results'] = $documents;
 
-        return $obj;
+        return $hash;
     }
 
     /**
