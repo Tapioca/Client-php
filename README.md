@@ -88,6 +88,13 @@ First you need to create an instance of your Tapioca Client. You must choose you
 			'limit'  => 10,
 			'skip'   => 20,
 		));
+	
+	// OR
+
+	$instance->select( array('name', 'desc') );
+	$instance->where( array('category' => 'TV') );
+	$instance->limit( 10 )
+	$instance->skip( 20 );
 
 	$results = $instance->get('products');
 
@@ -98,17 +105,17 @@ Select title field of `products`'s document form _ref `508278e811a3`, in english
 ```php
     $instance->set('select', array('title') );
     $instance->locale('en_UK');
-    $instance->document('products', '508278e811a32');
+    $document = $instance->document('products', '508278e811a32');
 ```
 
 Display document's preview.
 
 ```php
-	$instance->preview('50dad548c68dee2802000000');
+	$preview = $instance->preview('50dad548c68dee2802000000');
 ```
 
 Get file's details from library.
 
 ```php
-	$instance->library('tapioca-default-icon.jpg');
+	$library = $instance->library('tapioca-default-icon.jpg');
 ```
