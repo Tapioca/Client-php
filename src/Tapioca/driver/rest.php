@@ -187,17 +187,12 @@ class Driver_Rest extends \Tapioca\Driver
         // Send the request and get the response
         $result = $request->send()->json();
 
-        if( count( $result ) != 1 )
-        {
-            throw new \Tapioca\Exception( 'Not a valid preview token');
-        }
-
         // format document as object
         if( $this->_object && $result )
         {
-            return $this->format( $result[0] );
+            return $this->format( $result );
         }
 
-        return $result[0];
+        return $result;
     }
 }
