@@ -46,7 +46,7 @@ Complet configuration array:
 	$config = array(
 		'driver' => 'rest',
 		'slug'   => 'acme',
-		'server' => 'tapiocapp.com',
+		'server' => 'tapioca.io',
 		'object' => true,
 		'rest'   => array(
 			'https'        => true,
@@ -66,28 +66,49 @@ Complet configuration array:
 	);
 ```
 
-Rest need `curl` to be enable. Cache path need to be writable.
+### Details
+
+- `driver`: witch driver you want to use with `GET`method. Choose between `Rest` or `MongoDb`. Rest need `curl` to be enable.
+- `slug`: your Tapioca's application name. 
+- `object`: does we return array (MongoDB's php driver default behavior) or object (Rest's JSON default behavior).
+- `rest`: your credentials for API connection and POST/PUT signature -- __NOT DEFINITVE__
+- `mongo`: data to build MongoDB's DSN -- __NOT DEFINITVE__
+- `cache`: store query results to your filesystem. Cache path need to be writable.
 
 ## Query
 
-You can query your collections by passing an array to the `query`method or use the assignation methods.
+First you need to create an instance of your Tapioca Client. You must choose your `GET` driver. Then you can query your collections by passing an array to the `query`method or use the assignation [methods](#methods).
 
 ```php
 	$instance = Tapioca::client( 'rest', $config );
 
 	$instance->query( array(
 			'select' => array('name', 'desc'),
-			'where'  => array('category' => 'TV')
+			'where'  => array('category' => 'TV'),
+			'limit'  => 10,
+			'skip'   => 20,
 		));
 
 	$results = $instance->get('products');
 
 ```
 
-Ask `title` field of `products`'s document, _ref `508278e811a3`, in english.
+Select title field of `products`'s document form _ref `508278e811a3`, in english.
 
 ```php
     $instance->set('select', array('title') );
     $instance->locale('en_UK');
     $instance->document('products', '508278e811a32');
+```
+
+Display document's preview.
+
+```php
+	$instance->preview('50dad548c68dee2802000000');
+```
+
+Get file's details from library.
+
+```php
+	$instance->library('tapioca-default-icon.jpg');
 ```
