@@ -83,16 +83,18 @@ First you need to create an instance of your Tapioca Client. You must choose you
 	$instance = Tapioca::client( 'rest', $config );
 
 	$instance->query( array(
-			'select' => array('name', 'desc'),
+			'select' => array('name', 'description'),
 			'where'  => array('category' => 'TV'),
+			'sort'   => array('name' => 'DESC'),
 			'limit'  => 10,
 			'skip'   => 20,
 		));
 	
 	// OR
 
-	$instance->select( array('name', 'desc') );
+	$instance->select( array('name', 'description') );
 	$instance->where( array('category' => 'TV') );
+	$instance->sort( array('name' => 'DESC') );
 	$instance->limit( 10 )
 	$instance->skip( 20 );
 
@@ -117,5 +119,5 @@ Display document's preview.
 Get file's details from library.
 
 ```php
-	$library = $instance->library('tapioca-default-icon.jpg');
+	$file = $instance->library('tapioca-default-icon.jpg');
 ```
