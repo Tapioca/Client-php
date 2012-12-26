@@ -82,6 +82,8 @@ First you need to create an instance of your Tapioca Client. You must choose you
 ```php
 	$instance = Tapioca::client( 'rest', $config );
 
+    $instance->locale('fr_FR');
+
 	$instance->query( array(
 			'select' => array('name', 'description'),
 			'where'  => array('category' => 'TV'),
@@ -102,12 +104,50 @@ First you need to create an instance of your Tapioca Client. You must choose you
 
 ```
 
+will return:
+
+```json
+    {
+        "total": 21,
+        "skip": 20,
+        "limit": 10,
+        "results": [
+            {
+                "_ref": "50b08700b322a",
+                "_tapioca": {
+                    "revision": 1,
+                    "status": 100,
+                    "active": true,
+                    "locale": "fr_FR"
+                },
+                "title": "hello",
+                "description": "world"
+            }
+        ]
+    }
+```
+
 Select title field of `products`'s document form _ref `508278e811a3`, in english.
 
 ```php
     $instance->set('select', array('title') );
     $instance->locale('en_UK');
     $document = $instance->document('products', '508278e811a32');
+```
+
+will return:
+
+```json
+	{
+	    "_ref": "508278e811a32",
+	    "_tapioca": {
+	        "revision": 4,
+	        "status": 100,
+	        "active": true,
+	        "locale": "en_UK"
+	    },
+	    "title": "foo bar"
+	}
 ```
 
 Display document's preview.
