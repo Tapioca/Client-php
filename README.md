@@ -68,7 +68,7 @@ Complet configuration array:
 
 ### Details
 
-- `driver`: witch driver you want to use with `GET`method. Choose between `Rest` or `MongoDb`. Rest need `curl` to be enable.
+- `driver`: which driver you want to use with `GET`method. Choose between `Rest` or `MongoDb`. Rest need `curl` to be enable.
 - `slug`: your Tapioca's application name. 
 - `object`: does we return array (MongoDB's php driver default behavior) or object (Rest's JSON default behavior).
 - `rest`: your credentials for API connection and POST/PUT signature -- __NOT DEFINITVE__
