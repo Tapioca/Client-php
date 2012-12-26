@@ -99,7 +99,7 @@ abstract class Driver
         }
         else
         {
-            throw new Exception('Previews collections name must be provided');
+            throw new Exception('Library collections name must be provided');
         }
 
         // Set `previews` collection name
@@ -434,8 +434,8 @@ abstract class Driver
             // get a specific revison
             if( isset( $this->_tapioca['revision'] ) )
             {
-                $this->_unset('_where', '_tapioca.status');
-                $this->_unset('_where', '_tapioca.locale');
+                $this->_unset('where', '_tapioca.status');
+                $this->_unset('where', '_tapioca.locale');
 
                 $this->query('where', array( '_tapioca.revision' => $this->_tapioca['revision'] ));
             }
@@ -476,13 +476,12 @@ abstract class Driver
         // ask from cache
         if( $this->_cache )
         {
-            $key   = $this->cacheKey( $collection );
+            $key   = $this->collectionKey( $collection );
 
             $cache = $this->_cache->get( $key, $this->_config['cache']['ttl'] );
 
             if( $cache )
             {
-
                 $this->reset();
 
                 return $cache;
@@ -517,12 +516,7 @@ abstract class Driver
         if( $this->_cache )
         {
             // contact for key string
-            $key = $this->_slug + static::$previewCollection;
-
-            if( !is_null( $filename ) )
-            {
-                $key .= $filename;
-            }
+            $key = $this->libraryKey( $filename );
 
             $cache = $this->_cache->get( $key, $this->_config['cache']['ttl'] );
 
@@ -553,7 +547,7 @@ abstract class Driver
      * @param   string     Collection name
      * @return  string
      */
-    protected function cacheKey( $collection )
+    protected function collectionKey( $collection )
     {
         $query = array(
             'select'    => $this->_select,
@@ -563,7 +557,27 @@ abstract class Driver
             'sort'      => $this->_sort,
         );
 
-        return md5( $this->_slug + $collection + serialize( $query ) );
+        return $this->_slug . $collection . serialize( $query );
+    }
+
+    /**
+     * Merge App's slug + collection name + filename
+     * to get an unique MD5 hash as cache key
+     *
+     * @param   string     filename name
+     * @return  string
+     */
+    protected function libraryKey( $filename = null )
+    {
+        // contact for key string
+        $key = $this->_slug . static::$libraryCollection;
+
+        if( !is_null( $filename ) )
+        {
+            $key .= $filename;
+        }
+
+        return $key;
     }
 
     public function clearCache()
