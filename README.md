@@ -47,7 +47,6 @@ Complet configuration array:
 		'driver' => 'rest',
 		'slug'   => 'acme',
 		'server' => 'tapioca.io',
-		'object' => true,
 		'rest'   => array(
 			'https'        => true,
 			'clientId'     => 'YOUR_CLIENT_ID',

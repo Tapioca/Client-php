@@ -138,11 +138,6 @@ abstract class Driver
     protected $_slug;
 
     /**
-     * @var  string  Collection name
-     */
-    // protected $_collection;
-
-    /**
      * @var  array  Document information
      */
     protected $_tapioca;
@@ -151,6 +146,11 @@ abstract class Driver
      * @var  string  Document reference
      */
     protected $_ref;
+
+    /**
+     * @var  object  define a locale for query
+     */
+    protected $_locale = false;
 
     /**
      * @var  object  Cache class instance
@@ -249,19 +249,17 @@ abstract class Driver
 
 
     /**
-     * Document locale shortcuts
+     * Define query locale
      *
      * @access   public
      * @param    string    locale key
      * @return   void
      */
-    public function locale( $locale )
+    public function setLocale( $locale )
     {
         if( !empty( $locale ) )
         {
-            $this->_tapioca['locale'] = $locale;
-
-            return $this;
+            $this->_locale = $locale;
         }
     }
 
@@ -277,8 +275,6 @@ abstract class Driver
         if( !empty( $revision ) )
         {
             $this->_tapioca['revision'] = (int) $revision;
-
-            return $this;
         }
     }
 
@@ -294,8 +290,6 @@ abstract class Driver
         if( !empty( $status ) && is_numeric( $status ) )
         {
             $this->_tapioca['status'] = $status;
-
-            return $this;
         }
     }
 
@@ -340,8 +334,6 @@ abstract class Driver
                 $this->_set( $key, $value );
             }
         }
-
-        return $this;
     }
 
     /**
@@ -353,7 +345,6 @@ abstract class Driver
     public function select( array $value )
     {
         $this->query('select', $value);
-        return $this;
     }
 
     /**
@@ -365,7 +356,6 @@ abstract class Driver
     public function where( array $value )
     {
         $this->query('where', $value);
-        return $this;
     }
 
     /**
@@ -377,7 +367,6 @@ abstract class Driver
     public function sort( array $value )
     {
         $this->query('sort', $value);
-        return $this;
     }
 
     /**
@@ -390,8 +379,6 @@ abstract class Driver
     {
         if( is_numeric( $value ))
             $this->query('limit', $value);
-
-        return $this;
     }
 
     /**
@@ -404,8 +391,6 @@ abstract class Driver
     {
         if( is_numeric( $value ))
            $this->query('skip', $value);
-       
-        return $this;
     }
 
     /**
@@ -468,10 +453,10 @@ abstract class Driver
         ));
 
         // check if locale exists for this document
-        if( isset( $this->_tapioca['locale'] ) )
+        if( $this->_locale )
         {
             $this->query('where', array(
-                '_tapioca.locale' => $this->_tapioca['locale']
+                '_tapioca.locale' => $this->_locale
             ));
         }
 
