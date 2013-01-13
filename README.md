@@ -140,12 +140,6 @@ will return:
 ```json
 	{
 	    "_ref": "508278e811a32",
-	    "_tapioca": {
-	        "revision": 4,
-	        "status": 100,
-	        "active": true,
-	        "locale": "en_UK"
-	    },
 	    "title": "foo bar"
 	}
 ```
