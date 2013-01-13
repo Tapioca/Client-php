@@ -12,6 +12,12 @@
  * @link      https://github.com/Tapioca/Client-php
  */
 
+/**
+ *
+ * Based on Alex Bilbie's Mongo Query Builder 
+ *
+ */
+
 namespace Tapioca;
 
 use \Tapioca\MongoQB;
@@ -34,7 +40,13 @@ class Driver_MongoDB extends \Tapioca\Driver
     {
         $this->_driver = self::MONGODB;
         $this->init( $config );
-        
+
+        if ( ! class_exists('\Mongo'))
+        {
+            throw new Exception('The MongoDB PECL extension has not been installed or enabled');
+        }
+
+        // connection string
         $dsn = "mongodb://";
 
         if( empty( $config['server'] ) )
@@ -63,13 +75,42 @@ class Driver_MongoDB extends \Tapioca\Driver
 
         $dsn .= "/{$config['mongo']['database']}";
 
-        static::$qb = new MongoQB(array(
-            'dsn'   =>  trim( $dsn )
-        ));
+        // DB handler
+        $options = array();
+
+        if( $config['mongo']['persist'] === true )
+        {
+            $options['persist'] = $config['mongo']['persist_key'];
+        }
+
+        if( $config['mongo']['replica_set'] !== false )
+        {
+            $options['replicaSet'] = $config['mongo']['replica_set'];
+        }
+
+        try
+        {
+            if( phpversion('Mongo') >= 1.3 )
+            {
+                $_connection = new \MongoClient($dsn, $options);
+                static::$qb  = $_connection->{ $config['mongo']['database'] };
+            }
+
+            else
+            {
+                $_connection = new \Mongo($dsn, $options);
+                static::$qb  = $_connection->{ $config['mongo']['database'] };
+            }
+        }
+        catch (MongoConnectionException $Exception)
+        {
+            throw new Exception('Unable to connect to MongoDB: ' . $Exception->getMessage());
+        }
     }
 
     /**
      * Get App Data from Database
+     * TO REMOVE
      *
      * @access public
      * @param  string   property to return
@@ -109,16 +150,13 @@ class Driver_MongoDB extends \Tapioca\Driver
         // true collection name
         $collection = $this->_slug.'-'.$collection;
 
+        // Always exclude Mongo Id
+        $this->_select['_id'] = 0;
+
         if( is_null( $this->_ref ) )
         {
-            // query MongoDb
-            $hash = static::$qb
-                            ->select( $this->_select )
-                            ->where( $this->_where )
-                            ->orderBy( $this->_sort )
-                            ->limit( $this->_limit )
-                            ->offset( $this->_skip )
-                            ->hash( $collection );
+
+            $hash = $this->getHash( $collection );
 
             // format document as object
             if( $this->_object )
@@ -130,15 +168,14 @@ class Driver_MongoDB extends \Tapioca\Driver
         }
         else
         {
-            $ret =  static::$qb
-                            ->select( $this->_select )
-                            ->where( $this->_where )
-                            ->get( $collection );
+            $results =  static::$qb
+                            ->{$collection}
+                            ->find($this->_where, $this->_select);
+
+            $ret = static::readCursor( $results );
 
             if( count( $ret ) == 1 )
             {
-                unset( $ret[0]['_id'] );
-
                 $ret = $ret[0];
 
                 // format document as object
@@ -162,7 +199,6 @@ class Driver_MongoDB extends \Tapioca\Driver
      */
     protected function libraryMongoDB( $filename = null )
     {
-
         // Unset document query
         $this->_unset('where', '_tapioca.status');
         $this->_unset('where', '_tapioca.locale');
@@ -174,11 +210,12 @@ class Driver_MongoDB extends \Tapioca\Driver
 
         if( !is_null( $filename ) )
         {
-            $hash =  static::$qb
-                        ->select( array(), array('_id'))
-                        ->getWhere( $collection , array(
-                            'filename' => $filename
-                        ), 1);
+            $result = static::$qb
+                        ->{$collection}
+                        ->find(array('filename' => $filename), array('_id' => 0))
+                        ->limit(1);
+
+            $hash = static::readCursor( $result );
 
             if( count( $hash ) == 1 )
             {
@@ -187,14 +224,8 @@ class Driver_MongoDB extends \Tapioca\Driver
         }
         else
         {
-            // query MongoDb
-            $hash = static::$qb
-                            ->select( $this->_select )
-                            ->where( $this->_where )
-                            ->orderBy( $this->_sort )
-                            ->limit( $this->_limit )
-                            ->offset( $this->_skip )
-                            ->hash( $collection );
+
+            $hash = $this->getHash( $collection );
         }
 
         // format document as object
@@ -216,11 +247,13 @@ class Driver_MongoDB extends \Tapioca\Driver
      */
     public function preview( $token )
     {
+        $where  = array('_id' => new \MongoId( trim( $token ) ) );
+
         $result = static::$qb
-                    ->select( array(), array('_id'))
-                    ->getWhere( static::$previewCollection, array(
-                        '_id' => new \MongoId( $token ),
-                    ));
+                    ->{static::$previewCollection}
+                    ->find( $where , array('_id' => 0));
+
+        $result = static::readCursor( $result );
 
         if( count( $result ) != 1 )
         {
@@ -234,5 +267,65 @@ class Driver_MongoDB extends \Tapioca\Driver
         }
 
         return $result[0];
+    }
+
+
+    /**
+     * Parse MongoDB cursor
+     *
+     * @param  object   MongoDB cursor
+     * @return array
+     */
+    private static function readCursor( $results )
+    {
+        $documents = array();
+
+        while( $results->hasNext() )
+        {
+            try
+            {
+                $documents[] = $results->getNext();
+            }
+            catch (\MongoCursorException $Exception)
+            {
+                throw new Exception( $Exception->getMessage() );
+            }
+        }
+
+        return $documents;
+    }
+
+    /**
+     * Query MongoDB, return API compilant hash
+     *
+     * @param  string   Collection Name
+     * @return array
+     */
+    private function getHash( $collection )
+    {
+        // Always exclude Mongo Id
+        $this->_select['_id'] = 0;
+
+        // query MongoDb
+        $cursor = static::$qb
+                        ->{$collection}
+                        ->find($this->_where, $this->_select);
+
+        $total      = $cursor->count();
+
+        $results  = $cursor
+                        ->limit($this->_limit)
+                        ->skip($this->_skip)
+                        ->sort($this->_sort);
+
+        // hash to return
+        // use array for REST compilant
+        return array(
+            'total'   => $total,
+            'skip'    => $this->_skip,
+            'limit'   => $this->_limit,
+            'results' => static::readCursor( $results )
+        );
+
     }
 }

@@ -23,16 +23,9 @@
           , "Tapioca": "src"
         }
     }
-  , "repositories": [
-      {
-          "type": "vcs",
-          "url": "http://github.com/alexbilbie/mongoqb"
-      }
-    ]
   , "require": {
         "php": ">=5.3.3"
       , "guzzle/guzzle": "3.0.*@dev"
-      , "alexbilbie/mongoqb": "dev-master"
     }
   , "suggest": {
         "mustache/mustache": "2.0.*"

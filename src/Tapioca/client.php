@@ -90,6 +90,9 @@ class Client
                 'password'     => false,
                 'database'     => false,
                 'port'         => 27017,
+                'persist'      => true,
+                'persist_key'  => 'tapioca',
+                'replica_set'  => false,
             ),
             'cache'      => array(
                 'ttl'          => 3600,

@@ -130,7 +130,7 @@ will return:
 Select title field of `products`'s document form _ref `508278e811a3`, in english.
 
 ```php
-    $instance->set('select', array('title') );
+    $instance->query('select', array('title') );
     $instance->locale('en_UK');
     $document = $instance->document('products', '508278e811a32');
 ```
