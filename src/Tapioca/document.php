@@ -37,15 +37,6 @@ class Document
      */
     public function __construct( $document )
     {
-        // TEST
-        $document['nested'] = array(
-                                   'database' => array(
-                                       'host' => 'localhost',
-                                       'user' => 'Treffynnon',
-                                       'pass' => 'password',
-                                       'db'   => 'database',
-                              ));
-
         $this->_original = $document;
 
         if( isset( $document['_ref'] ) )
