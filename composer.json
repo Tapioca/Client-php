@@ -1,6 +1,6 @@
 {
     "name": "tapioca/client-php"
-  , "version": "0.2"
+  , "version": "0.2.1"
   , "type": "library"
   , "description": "Tapioca PHP client"
   , "keywords": ["Tapioca", "MongoDb", "CMS"]

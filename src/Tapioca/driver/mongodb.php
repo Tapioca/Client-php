@@ -20,8 +20,6 @@
 
 namespace Tapioca;
 
-use \Tapioca\MongoQB;
-
 class Driver_MongoDB extends \Tapioca\Driver
 {
     /**
@@ -159,10 +157,10 @@ class Driver_MongoDB extends \Tapioca\Driver
             $hash = $this->getHash( $collection );
 
             // format document as object
-            if( $this->_object )
-            {
-                $hash = $this->format( $hash );
-            }
+            // if( $this->_object )
+            // {
+            //     $hash = $this->format( $hash );
+            // }
 
             return $hash;
         }
@@ -179,10 +177,10 @@ class Driver_MongoDB extends \Tapioca\Driver
                 $ret = $ret[0];
 
                 // format document as object
-                if( $this->_object )
-                {
-                    $ret = $this->format( $ret );
-                }
+                // if( $this->_object )
+                // {
+                //     $ret = $this->format( $ret );
+                // }
 
                 return $ret;
             }
@@ -215,7 +213,7 @@ class Driver_MongoDB extends \Tapioca\Driver
                         ->find(array('filename' => $filename), array('_id' => 0))
                         ->limit(1);
 
-            $hash = static::readCursor( $result );
+            $hash = static::readCursor( $result, false );
 
             if( count( $hash ) == 1 )
             {
@@ -225,14 +223,14 @@ class Driver_MongoDB extends \Tapioca\Driver
         else
         {
 
-            $hash = $this->getHash( $collection );
+            $hash = $this->getHash( $collection, false );
         }
 
         // format document as object
-        if( $this->_object )
-        {
-            $hash = $this->format( $hash );
-        }
+        // if( $this->_object )
+        // {
+        //     $hash = $this->format( $hash );
+        // }
 
         return $hash;
 
@@ -253,7 +251,7 @@ class Driver_MongoDB extends \Tapioca\Driver
                     ->{static::$previewCollection}
                     ->find( $where , array('_id' => 0));
 
-        $result = static::readCursor( $result );
+        $result = static::readCursor( $result, false );
 
         if( count( $result ) != 1 )
         {
@@ -276,7 +274,7 @@ class Driver_MongoDB extends \Tapioca\Driver
      * @param  object   MongoDB cursor
      * @return array
      */
-    private static function readCursor( $results )
+    private static function readCursor( $results, $asDocument = true )
     {
         $documents = array();
 
@@ -284,7 +282,7 @@ class Driver_MongoDB extends \Tapioca\Driver
         {
             try
             {
-                $documents[] = $results->getNext();
+                $documents[] = ( $asDocument ) ?  new Document( $results->getNext() ) : $results->getNext();
             }
             catch (\MongoCursorException $Exception)
             {
@@ -301,7 +299,7 @@ class Driver_MongoDB extends \Tapioca\Driver
      * @param  string   Collection Name
      * @return array
      */
-    private function getHash( $collection )
+    private function getHash( $collection, $asDocument = true )
     {
         // Always exclude Mongo Id
         $this->_select['_id'] = 0;
@@ -324,7 +322,7 @@ class Driver_MongoDB extends \Tapioca\Driver
             'total'   => $total,
             'skip'    => $this->_skip,
             'limit'   => $this->_limit,
-            'results' => static::readCursor( $results )
+            'results' => static::readCursor( $results, $asDocument )
         );
 
     }

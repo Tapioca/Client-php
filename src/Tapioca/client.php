@@ -14,9 +14,6 @@
 
 namespace Tapioca;
 
-/**
-* @codeCoverageIgnore
-*/
 class Exception extends \Exception {}
 
 class Client 
@@ -24,7 +21,7 @@ class Client
     /**
      * @var  Library version
      */
-    protected static $version = '0.2.0';
+    protected static $version = '0.2.1';
 
     /**
      * @var  Client
