@@ -241,12 +241,7 @@ abstract class Driver
         {
             $this->_ref = $ref;
 
-            return $this->get( $collection );
-
-            // if( $hash->total == 1 )
-            // {
-            //     return $hash->results[0];
-            // }
+            return $this->collection( $collection );
         }
     
         return false;
@@ -505,13 +500,13 @@ abstract class Driver
     }
 
     /**
-     * Get Document based on query
+     * Get Documents based on query
      *
      * @access public
      * @param  string   collection name
      * @return object
      */
-    public function get( $collection = null )
+    public function collection( $collection = null )
     {
         if( is_null( $collection ))
         {

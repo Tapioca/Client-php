@@ -71,7 +71,6 @@ class Client
             'driver'      => 'rest', 
             'slug'        => false,
             'server'      => false,
-            'object'      => false,
             'collections' => array(
                 'apps'         => 'apps',
                 'library'      => 'library',

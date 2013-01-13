@@ -100,11 +100,11 @@ First you need to create an instance of your Tapioca Client. You must choose you
 	$instance->limit( 10 )
 	$instance->skip( 20 );
 
-	$results = $instance->get('products');
+	$results = $instance->collection('products');
 
 ```
 
-will return:
+will return a Tapioca\Collection Object.
 
 ```json
     {
@@ -135,7 +135,7 @@ Select title field of `products`'s document form _ref `508278e811a3`, in english
     $document = $instance->document('products', '508278e811a32');
 ```
 
-will return:
+will return a Tapioca\Document Object.
 
 ```json
 	{

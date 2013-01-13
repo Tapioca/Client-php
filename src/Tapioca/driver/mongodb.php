@@ -14,7 +14,7 @@
 
 /**
  *
- * Based on Alex Bilbie's Mongo Query Builder 
+ * Database handler based on Alex Bilbie's Mongo Query Builder 
  *
  */
 
@@ -153,16 +153,15 @@ class Driver_MongoDB extends \Tapioca\Driver
 
         if( is_null( $this->_ref ) )
         {
-
             $hash = $this->getHash( $collection );
 
-            // format document as object
-            // if( $this->_object )
-            // {
-            //     $hash = $this->format( $hash );
-            // }
-
-            return $hash;
+            return new Collection( $hash, array(
+                            'select' => $this->_select,
+                            'where'  => $this->_where,
+                            'limit'  => $this->_limit,
+                            'skip'   => $this->_skip,
+                            'sort'   => $this->_sort,
+                        ));
         }
         else
         {
@@ -175,12 +174,6 @@ class Driver_MongoDB extends \Tapioca\Driver
             if( count( $ret ) == 1 )
             {
                 $ret = $ret[0];
-
-                // format document as object
-                // if( $this->_object )
-                // {
-                //     $ret = $this->format( $ret );
-                // }
 
                 return $ret;
             }
@@ -226,14 +219,7 @@ class Driver_MongoDB extends \Tapioca\Driver
             $hash = $this->getHash( $collection, false );
         }
 
-        // format document as object
-        // if( $this->_object )
-        // {
-        //     $hash = $this->format( $hash );
-        // }
-
         return $hash;
-
     }
 
     /**

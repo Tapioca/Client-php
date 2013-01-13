@@ -14,8 +14,6 @@
 
 namespace Tapioca;
 
-class TapiocaDoucmentException extends \Exception {}
-
 class Document 
 {
     /**
