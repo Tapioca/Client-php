@@ -21,7 +21,7 @@ class Client
     /**
      * @var  Library version
      */
-    protected static $version = '0.2.1';
+    protected static $version = '0.2.2';
 
     /**
      * @var  Client
@@ -76,16 +76,12 @@ class Client
                 'library'      => 'library',
                 'previews'     => 'previews',
             ),
-            'rest'        => array(
-                'https'        => true,
-                'clientId'     => false,
-                'clientSecret' => false,
-            ),
-            'mongo'       => array(
-                'username'     => false,
-                'password'     => false,
-                'database'     => false,
-                'port'         => 27017,
+            'url'          => true,
+            'clientId'     => false,
+            'clientSecret' => false,
+            'fileStorage'  => false,
+            'mongo'        => array(
+                'dsn'          => 'mongodb://user:pass@localhost:27017/databaseName',
                 'persist'      => true,
                 'persist_key'  => 'tapioca',
                 'replica_set'  => false,

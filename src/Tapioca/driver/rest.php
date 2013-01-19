@@ -34,37 +34,6 @@ class Driver_Rest extends \Tapioca\Driver
     {
         $this->_driver = self::REST;
         $this->init( $config );
-
-        $url  = ( $config['rest']['https'] ) ? 'https' : 'http';
-        $url .= '://';
-
-        if( empty( $config['server'] ) )
-        {
-            throw new Exception( 'The server must be set to connect to Tapioca Rest API' );
-        }
-
-        $url .= $config['server'];
-
-        if( substr( $url, -1 ) != '/')
-        {
-            $url .= '/';
-        }
-
-        $url .= 'api/';
-
-        if( empty( $config['rest']['clientId'] ) )
-        {
-            throw new Exception( 'You must provide your Client Id' );
-        }
-
-        if( empty( $config['rest']['clientSecret'] ) )
-        {
-            throw new Exception( 'You must provide your Secret' );
-        }
-
-        static::$qb = new GuzzleClient( $url, array(
-                            'key' => $config['rest']['clientId']
-                        ) );
     }
 
     /**
@@ -85,7 +54,7 @@ class Driver_Rest extends \Tapioca\Driver
     protected function getRest( $collection = null )
     {
         // base url
-        $url = $this->_slug . '/document/' . $collection;
+        $url = 'document/' . $collection;
 
         if( is_null( $this->_ref ) )
         {
@@ -101,18 +70,18 @@ class Driver_Rest extends \Tapioca\Driver
                         )
                     );
             
-            $request = static::$qb->get(array( $url . '{?key,q}', $query));
+            $request = static::$rest->get(array( $url . '{?key,q}', $query));
 
             // Send the request and get the response
-            $hash = $request->send()->json();
+            $hash = $this->parseReturn( $request->send()->json() );
 
-            // format document as object
-            if( $this->_object )
-            {
-                $hash = $this->format( $hash );
-            }
-
-            return $hash;
+            return new Collection( $hash, array(
+                            'select' => $this->_select,
+                            'where'  => $this->_where,
+                            'limit'  => $this->_limit,
+                            'skip'   => $this->_skip,
+                            'sort'   => $this->_sort,
+                        ));
         }
         else
         {
@@ -124,18 +93,10 @@ class Driver_Rest extends \Tapioca\Driver
                 $arg['l'] = $this->_tapioca['locale'];
             }
 
-            $request = static::$qb->get( array( $url . '{?key,l}', $arg ) );
+            $request = static::$rest->get( array( $url . '{?key,l}', $arg ) );
 
             // Send the request and get the response
-            $ret = $request->send()->json();
-
-            // format document as object
-            if( $this->_object )
-            {
-                $ret = $this->format( $ret );
-            }
-
-            return $ret;
+            return new Document( $request->send()->json() );
         }
 
     }
@@ -149,25 +110,36 @@ class Driver_Rest extends \Tapioca\Driver
     protected function libraryRest( $filename = null )
     {
         // base url
-        $url = $this->_slug . '/library';
+        $url = 'library';
 
         if( !is_null( $filename ) )
         {
             $url .= '/'.$filename;
         }
-        
-        $request = static::$qb->get( $url . '{?key}' );
 
-        // Send the request and get the response
-        $result = $request->send()->json();
+        $query = array();
 
-        // format document as object
-        if( $this->_object )
+        if( isset( $this->_where['category'] ))
         {
-            $result = $this->format( $result );
+            $query['category'] = $this->_where['category'];
         }
 
-        return $result;
+        $request = static::$rest->get( array( $url . '{?key,category}', $query ) );
+
+        if( !is_null( $filename ) )
+        {
+            return new File( $request->send()->json(), $this->_fileStorage );
+        }
+
+        $hash = $this->parseReturn( $request->send()->json(), false);
+
+        return new Collection( $hash, array(
+                        'select' => $this->_select,
+                        'where'  => $this->_where,
+                        'limit'  => $this->_limit,
+                        'skip'   => $this->_skip,
+                        'sort'   => $this->_sort,
+                    ));
     }
 
     /**
@@ -180,19 +152,29 @@ class Driver_Rest extends \Tapioca\Driver
     public function preview( $token )
     {
         // base url
-        $url = $this->_slug . '/preview/' . $token;
+        $url = 'preview/' . trim( $token );
         
-        $request = static::$qb->get( $url . '{?key}' );
-
-        // Send the request and get the response
-        $result = $request->send()->json();
-
-        // format document as object
-        if( $this->_object && $result )
+        try
         {
-            return $this->format( $result );
+            $request = static::$rest->get( $url . '{?key}' );
+        }
+        catch (\Guzzle\Http\Exception\ClientErrorResponseException $e)
+        {
+            return 'Uh oh! ' . $e->getMessage();
         }
 
-        return $result;
+
+        // Send the request and get the response
+        return new Document( $request->send()->json() );
+    }
+
+    private function parseReturn( $return, $asDocument = true )
+    {
+        foreach( $return['results'] as &$document )
+        {
+            $document = ( $asDocument ) ?  new Document( $document ) : new File( $document, $this->_fileStorage );
+        }
+
+        return $return;
     }
 }

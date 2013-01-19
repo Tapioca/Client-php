@@ -44,19 +44,17 @@ Complet configuration array:
 
 ```php
 	$config = array(
-		'driver' => 'rest',
-		'slug'   => 'acme',
-		'server' => 'tapioca.io',
-		'rest'   => array(
-			'https'        => true,
-			'clientId'     => 'YOUR_CLIENT_ID',
-			'clientSecret' => 'YOUR_CLIENT_SECRET',
-         ),
-		'mongo'  => array(
-			'username' => 'YOUR_USER_NAME',
-			'password' => 'YOUR_PASSWORD',
-			'database' => 'acme',
-			'port'     => 27017,
+		'driver'       => 'rest',
+		'slug'         => 'acme',
+        'clientId'     => '8Svjq5etHjDgBwmr',
+        'clientSecret' => '3ad6d44a44e6b253a911eb1bd88db210a6d63b91b90036ffdf8bccb539c15d7e',
+        'url'          => 'http://tapioca.io/api/',
+        'fileStorage'  => 'http://tapioca.io/files/',
+		'mongo'        => array(
+            'dsn'          => 'mongodb://user:pass@localhost:27017/databaseName',
+            'persist'      => true,
+            'persist_key'  => 'tapioca',
+            'replica_set'  => false,
 		),
 		'cache'  => array(
 			'ttl'  => 3600,
@@ -69,19 +67,17 @@ Complet configuration array:
 
 - `driver`: which driver you want to use with `GET` method. Choose between `Rest` or `MongoDb`. Rest need `curl` to be enable.
 - `slug`: your Tapioca's application name. 
-- `object`: should we return array (MongoDB php driver default behavior) or object (Rest's JSON default behavior).
-- `rest`: your credentials for API connection and POST/PUT signature -- __NOT DEFINITVE__
 - `mongo`: data to build MongoDB's DSN -- __NOT DEFINITVE__
 - `cache`: store query results to your filesystem. Cache path need to be writable.
 
-## Query
+## Query (draft)
 
-First you need to create an instance of your Tapioca Client. You must choose your `GET` driver. Then you can query your collections by passing an array to the `query`method or use the assignation [methods](#methods).
+### Collection
+
+First you need to create an instance of your Tapioca Client. You must choose your `GET` driver. Then you can query your collections by passing an array to the `query` method or use the shortcuts [methods](#methods).
 
 ```php
 	$instance = Tapioca::client( 'rest', $config );
-
-    $instance->locale('fr_FR');
 
 	$instance->query( array(
 			'select' => array('name', 'description'),
@@ -103,7 +99,8 @@ First you need to create an instance of your Tapioca Client. You must choose you
 
 ```
 
-will return a Tapioca\Collection Object.
+These will return a Tapioca\Collection Object based on API result. 
+Iterate over these object will allow you to handle each documents. 
 
 ```json
     {
@@ -113,24 +110,51 @@ will return a Tapioca\Collection Object.
         "results": [
             {
                 "_ref": "50b08700b322a",
-                "_tapioca": {
-                    "revision": 1,
-                    "status": 100,
-                    "active": true,
-                    "locale": "fr_FR"
-                },
                 "title": "hello",
-                "description": "world"
+                "description": "world",
+                "nested": {
+                    "value": "bye"
+                }
             }
         ]
     }
 ```
 
+```php
+    echo $results->count() .' on '.$results->total().' documents<br>';
+    // 1 on 21 documents
+
+    echo '<ul>';
+    foreach( $results as $product)
+    {
+        echo '<li>';
+        echo $product->title.' || ';
+        echo $product->description;
+        echo $product->undefinedField; // return empty string
+        echo '</li>';
+
+    }
+    echo '</ul>';
+
+    // print original document
+    print_r( $results->at(0)->get() ); 
+
+    echo $results->at(0)->get('title'); // get title value
+    echo $results->at(0)->get('nested.value');
+    echo $results->at(0)->get('undefinedField', 'set a default title');
+
+    // Debug 
+    print_r($results->queryLog());
+```
+
+### Document
+
 Select title field of `products`'s document form _ref `508278e811a3`, in english.
 
 ```php
+    $instance->setLocale('en_UK');
+
     $instance->query('select', array('title') );
-    $instance->locale('en_UK');
     $document = $instance->document('products', '508278e811a32');
 ```
 
@@ -143,11 +167,15 @@ will return a Tapioca\Document Object.
 	}
 ```
 
+### Preview
+
 Display document's preview.
 
 ```php
 	$preview = $instance->preview('50dad548c68dee2802000000');
 ```
+
+### File
 
 Get file's details from library.
 

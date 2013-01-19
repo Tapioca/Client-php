@@ -39,39 +39,20 @@ class Driver_MongoDB extends \Tapioca\Driver
         $this->_driver = self::MONGODB;
         $this->init( $config );
 
-        if ( ! class_exists('\Mongo'))
+        $dsn = $config['mongo']['dsn'];
+
+        if( !class_exists('\Mongo') )
         {
             throw new Exception('The MongoDB PECL extension has not been installed or enabled');
         }
 
-        // connection string
-        $dsn = "mongodb://";
-
-        if( empty( $config['server'] ) )
+        if( empty( $dsn ) )
         {
-            throw new Exception( 'The server must be set to connect to MongoDB' );
+            throw new Exception('The DSN is empty');
         }
-
-        if( empty( $config['mongo']['database'] ) )
-        {
-            throw new Exception( 'The database must be set to connect to MongoDB' );
-        }
-
-        if( ! empty( $config['mongo']['username'] ) and ! empty( $config['mongo']['password'] ) )
-        {
-            $dsn .= "{$config['mongo']['username']}:{$config['mongo']['password']}@";
-        }
-
-        if( isset( $config['port'] ) and ! empty( $config['port'] ) )
-        {
-            $dsn .= "{$config['server']}:{$config['mongo']['port']}";
-        }
-        else
-        {
-            $dsn .= "{$config['server']}";
-        }
-
-        $dsn .= "/{$config['mongo']['database']}";
+        
+        $parts  = parse_url( $dsn );
+        $dbname = str_replace('/', '', $parts['path']);
 
         // DB handler
         $options = array();
@@ -90,14 +71,14 @@ class Driver_MongoDB extends \Tapioca\Driver
         {
             if( phpversion('Mongo') >= 1.3 )
             {
-                $_connection = new \MongoClient($dsn, $options);
-                static::$qb  = $_connection->{ $config['mongo']['database'] };
+                $_connection = new \MongoClient( $dsn, $options);
+                static::$qb  = $_connection->{ $dbname };
             }
 
             else
             {
-                $_connection = new \Mongo($dsn, $options);
-                static::$qb  = $_connection->{ $config['mongo']['database'] };
+                $_connection = new \Mongo( $dsn, $options);
+                static::$qb  = $_connection->{ $dbname };
             }
         }
         catch (MongoConnectionException $Exception)
@@ -169,7 +150,7 @@ class Driver_MongoDB extends \Tapioca\Driver
                             ->{$collection}
                             ->find($this->_where, $this->_select);
 
-            $ret = static::readCursor( $results );
+            $ret = $this->readCursor( $results );
 
             if( count( $ret ) == 1 )
             {
@@ -195,8 +176,8 @@ class Driver_MongoDB extends \Tapioca\Driver
         $this->_unset('where', '_tapioca.locale');
 
         // base url
-        $url = $this->_slug . '/library/';
-
+        $url        = $this->_slug . '/library/';
+        $hash       = false;
         $collection = $this->_slug.'--'.static::$libraryCollection;
 
         if( !is_null( $filename ) )
@@ -206,7 +187,7 @@ class Driver_MongoDB extends \Tapioca\Driver
                         ->find(array('filename' => $filename), array('_id' => 0))
                         ->limit(1);
 
-            $hash = static::readCursor( $result, false );
+            $hash = $this->readCursor( $result, false );
 
             if( count( $hash ) == 1 )
             {
@@ -217,6 +198,14 @@ class Driver_MongoDB extends \Tapioca\Driver
         {
 
             $hash = $this->getHash( $collection, false );
+
+            return new Collection( $hash, array(
+                                        'select' => $this->_select,
+                                        'where'  => $this->_where,
+                                        'limit'  => $this->_limit,
+                                        'skip'   => $this->_skip,
+                                        'sort'   => $this->_sort,
+                                    ));
         }
 
         return $hash;
@@ -237,17 +226,11 @@ class Driver_MongoDB extends \Tapioca\Driver
                     ->{static::$previewCollection}
                     ->find( $where , array('_id' => 0));
 
-        $result = static::readCursor( $result, false );
+        $result = $this->readCursor( $result  );
 
         if( count( $result ) != 1 )
         {
             throw new \Tapioca\Exception( 'Not a valid preview token');
-        }
-
-        // format document as object
-        if( $this->_object && $result )
-        {
-            return $this->format( $result[0] );
         }
 
         return $result[0];
@@ -260,7 +243,7 @@ class Driver_MongoDB extends \Tapioca\Driver
      * @param  object   MongoDB cursor
      * @return array
      */
-    private static function readCursor( $results, $asDocument = true )
+    private function readCursor( $results, $asDocument = true )
     {
         $documents = array();
 
@@ -268,7 +251,7 @@ class Driver_MongoDB extends \Tapioca\Driver
         {
             try
             {
-                $documents[] = ( $asDocument ) ?  new Document( $results->getNext() ) : $results->getNext();
+                $documents[] = ( $asDocument ) ?  new Document( $results->getNext() ) : new File( $results->getNext(), $this->_fileStorage );
             }
             catch (\MongoCursorException $Exception)
             {
@@ -308,7 +291,7 @@ class Driver_MongoDB extends \Tapioca\Driver
             'total'   => $total,
             'skip'    => $this->_skip,
             'limit'   => $this->_limit,
-            'results' => static::readCursor( $results, $asDocument )
+            'results' => $this->readCursor( $results, $asDocument )
         );
 
     }

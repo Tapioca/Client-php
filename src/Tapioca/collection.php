@@ -17,11 +17,6 @@ namespace Tapioca;
 class Collection implements \Iterator
 {
     /**
-     * @var  array  Documens
-     */
-    protected $_documents = array();
-
-    /**
      * @var  int  total documents matching query
      */
     protected $_total = 0;
@@ -36,6 +31,11 @@ class Collection implements \Iterator
      */
     protected $_query = array();
 
+    /**
+     * @var  array  Documents
+     */
+    protected $_documents = array();
+    
     /**
      * Constructor
      *
@@ -111,11 +111,11 @@ class Collection implements \Iterator
     }
 
     /**
-     * Access Document object
+     * Access Document object by array index
      *
      * @return object
      */
-    public function get( $index )
+    public function at( $index )
     {
         if( isset( $this->_documents[ $index ] ) )
         {

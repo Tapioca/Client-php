@@ -14,6 +14,8 @@
 
 namespace Tapioca;
 
+use \Guzzle\Http\Client as GuzzleClient;
+
 abstract class Driver
 {
     /**
@@ -60,8 +62,40 @@ abstract class Driver
 
         $this->_slug   = $config['slug'];
 
-        // sould we return object or array (default php mongodb driver behavior)
-        $this->_object  = ( isset( $config['object'] ) && $config['object'] );
+        //
+        if( empty( $config['url'] ) )
+        {
+            throw new Exception( 'The URL must be set to connect to Tapioca Rest API' );
+        }
+
+        $url = $config['url'];
+
+        if( substr( $url, -1 ) != '/')
+        {
+            $url .= '/';
+        }
+
+
+        if( substr( $url, -4 ) != 'api/')
+        {
+            $url .= 'api/';
+        }
+
+        $url .= $this->_slug.'/';
+
+        if( empty( $config['clientId'] ) )
+        {
+            throw new Exception( 'You must provide your Client Id' );
+        }
+
+        if( empty( $config['clientSecret'] ) )
+        {
+            throw new Exception( 'You must provide your Secret' );
+        }
+
+        static::$rest = new GuzzleClient( $url, array(
+                            'key' => $config['clientId']
+                        ));
 
         // set cache config
         if( is_array( $config['cache'] ) && $config['cache']['path'] )
@@ -112,6 +146,18 @@ abstract class Driver
             throw new Exception('Previews collections name must be provided');
         }
 
+        if( $config['fileStorage'] )
+        {
+            $this->_fileStorage = $config['fileStorage'];
+
+            if( substr( $this->_fileStorage, -1 ) != '/')
+            {
+                $this->_fileStorage .= '/';
+            }
+
+            $this->_fileStorage .= $this->_slug.'/';
+        }
+
         // allow to pass app's data via config
         // usefull in shared environment/reduce remote query
         if( isset( $config['app'] ) && is_array( $config['app'] ))
@@ -121,6 +167,11 @@ abstract class Driver
 
         $this->reset();
     }
+
+    /**
+     * @var  object  Guzzle Query Builder Object
+     */
+    protected static $rest = false;
 
     /**
      * @var  Array 
@@ -190,6 +241,11 @@ abstract class Driver
      * @var  string  Library Collection
      */
     protected static $libraryCollection;
+
+    /**
+     * @var  array  Base Url for files access
+     */
+    protected $_fileStorage = false;
 
     /**
      * Magic get method to allow getting class properties but still having them protected
@@ -290,6 +346,21 @@ abstract class Driver
         if( !empty( $status ) && is_numeric( $status ) )
         {
             $this->_tapioca['status'] = $status;
+        }
+    }
+
+    /**
+     * File category shortcuts
+     *
+     * @access   public
+     * @param    int
+     * @return   void
+     */
+    public function category( $category )
+    {
+        if( !empty( $category ) )
+        {
+            $this->query('where', array( 'category' => $category ) );
         }
     }
 
