@@ -70,12 +70,6 @@ class Client
         $_defaults = array( 
             'driver'      => 'rest', 
             'slug'        => false,
-            'server'      => false,
-            'collections' => array(
-                'apps'         => 'apps',
-                'library'      => 'library',
-                'previews'     => 'previews',
-            ),
             'url'          => true,
             'clientId'     => false,
             'clientSecret' => false,
@@ -89,6 +83,11 @@ class Client
             'cache'      => array(
                 'ttl'          => 3600,
                 'path'         => false,
+            ),
+            'collections' => array(
+                'apps'         => 'apps',
+                'library'      => 'library',
+                'previews'     => 'previews',
             ),
         );
 

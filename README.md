@@ -141,7 +141,7 @@ Iterate over these object will allow you to handle each documents.
 
     echo $results->at(0)->get('title'); // get title value
     echo $results->at(0)->get('nested.value');
-    echo $results->at(0)->get('undefinedField', 'set a default title');
+    echo $results->at(0)->get('undefinedField', 'set a default value');
 
     // Debug 
     print_r($results->queryLog());
