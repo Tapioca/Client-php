@@ -194,8 +194,3 @@ To clear all cache files
     $resp = $instance->clearCache();
 ```
 
-To clear all cache files
-
-```php
-    $resp = $instance->clearCache();
-```
