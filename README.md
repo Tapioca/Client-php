@@ -77,6 +77,9 @@ Complet configuration array:
 First you need to create an instance of your Tapioca Client. You must choose your `GET` driver. Then you can query your collections by passing an array to the `query` method or use the shortcuts [methods](#methods).
 
 ```php
+
+    use Tapioca\Client as Tapioca;
+    
 	$instance = Tapioca::client( 'rest', $config );
 
 	$instance->query( array(
@@ -181,4 +184,18 @@ Get file's details from library.
 
 ```php
 	$file = $instance->library('tapioca-default-icon.jpg');
+```
+
+### Clear Cache
+
+To clear all cache files
+
+```php
+    $resp = $instance->clearCache();
+```
+
+To clear all cache files
+
+```php
+    $resp = $instance->clearCache();
 ```

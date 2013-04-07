@@ -54,7 +54,7 @@ class Cache
      */
     private function _name( $key )
     {
-        return sprintf("%s/%s", $this->dir, sha1( $key ) );
+        return sprintf("%s/%s.cache", $this->dir, sha1( $key ) );
     }
 
     /**
@@ -135,8 +135,17 @@ class Cache
         return true;
     }
 
-    public function clear( $key )
+    public function clear( $key = null )
     {
+        if( is_null( $key ))
+        {
+            $files = glob($this->dir."/*.cache");
+            foreach($files as $file) 
+                unlink($file); 
+
+            return true; 
+        }
+
         $cache_path = $this->_name( $key );
 
         if(file_exists( $cache_path ) )

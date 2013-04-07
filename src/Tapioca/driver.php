@@ -284,6 +284,20 @@ abstract class Driver
     }
 
     /**
+     * Clear cache files
+     *
+     * @return  void
+     */
+
+    public function clearCache( $key = null )
+    {
+        if( !is_null( $this->_cache ))
+        {
+            $this->_cache->clear( $key );
+        }
+    }
+
+    /**
      * Get Document
      *
      * @access   public
@@ -683,11 +697,6 @@ abstract class Driver
         }
 
         return $key;
-    }
-
-    public function clearCache()
-    {
-
     }
 
     /**
