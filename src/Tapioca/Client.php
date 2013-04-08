@@ -21,7 +21,7 @@ class Client
     /**
      * @var  Library version
      */
-    protected static $version = '0.2.4';
+    protected static $version = '0.2.41';
 
     /**
      * @var  Client
@@ -58,7 +58,7 @@ class Client
             throw new Exception('No Tapioca driver given.');
         }
 
-        $driver = 'Tapioca\\Driver_'.$config['driver'];
+        $driver = 'Tapioca\\Driver_' . ucfirst( $config['driver'] );
 
         if( ! class_exists($driver, true))
         {
@@ -68,8 +68,8 @@ class Client
         // Default config
         // DO NOT EDIT
         $_defaults = array( 
-            'driver'      => 'rest', 
-            'slug'        => false,
+            'driver'       => 'Rest', 
+            'slug'         => false,
             'url'          => true,
             'clientId'     => false,
             'clientSecret' => false,
