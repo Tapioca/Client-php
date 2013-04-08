@@ -21,7 +21,7 @@ class Client
     /**
      * @var  Library version
      */
-    protected static $version = '0.2.3';
+    protected static $version = '0.2.4';
 
     /**
      * @var  Client
