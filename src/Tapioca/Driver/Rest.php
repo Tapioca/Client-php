@@ -69,8 +69,13 @@ class Driver_Rest extends \Tapioca\Driver
                                 ) 
                         )
                     );
-            
-            $request = static::$rest->get(array( $url . '{?key,q}', $query));
+
+            if( isset( $this->_where['_tapioca.locale'] ) )
+            {
+                $query['l'] = $this->_where['_tapioca.locale'];
+            }
+
+            $request = static::$rest->get(array( $url . '{?key,q,l}', $query));
 
             // Send the request and get the response
             $hash = $this->parseReturn( $request->send()->json() );
