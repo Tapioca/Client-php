@@ -278,7 +278,7 @@ abstract class Driver
         $this->_tapioca    = array();
         $this->_select     = array();
         $this->_where      = array( '_tapioca.status' => 100 );
-        $this->_sort       = array( '$natural' => -1 );
+        $this->_sort       = array(); // '$natural' => -1 );
         $this->_limit      = 99999;
         $this->_skip       = 0;
     }
