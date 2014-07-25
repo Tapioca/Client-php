@@ -5,23 +5,23 @@
  * PHP Client.
  *
  * @package   Tapioca
- * @version   v0.2
+ * @version   v0.3
  * @author    Michael Lefebvre
  * @license   MIT License
- * @copyright 2012 Michael Lefebvre
+ * @copyright 2014 Michael Lefebvre
  * @link      https://github.com/Tapioca/Client-php
  */
 
 namespace Tapioca;
 
-class Exception extends \Exception {}
-
 class Client 
 {
+    const INST_NAME = 'defautl';
+
     /**
      * @var  Library version
      */
-    protected static $version = '0.2.41';
+    protected static $version = '0.3.0';
 
     /**
      * @var  Client
@@ -40,12 +40,12 @@ class Client
      * @param   array     Configuration array
      * @return  Fieldset
      */
-    public static function client( $name = 'default', $config = array() )
+    public static function client( $name = self::INST_NAME, $config = array() )
     {
         if( is_array( $name ) )
         {
             $config = $name;
-            $name   = 'default';
+            $name   = self::INST_NAME;
         }
 
         if ( $exists = static::instance( $name ) )
@@ -53,23 +53,18 @@ class Client
             return $exists;
         }
 
-        if( !isset( $config['driver'] ) || empty($config['driver'] ) )
-        {
-            throw new Exception('No Tapioca driver given.');
-        }
-
         $driver = 'Tapioca\\Driver_' . ucfirst( $config['driver'] );
 
         if( ! class_exists($driver, true))
         {
-            throw new Exception('Could not find Tapioca driver: '.$config['driver']. ' ('.$driver.')');
+            throw new TapiocaException('Could not find Tapioca driver: '.$config['driver']. ' ('.$driver.')');
         }
 
         // Default config
         // DO NOT EDIT
         $_defaults = array( 
-            'driver'       => 'Rest', 
-            'slug'         => false,
+            'slug'         => false
+        ,
             'url'          => true,
             'clientId'     => false,
             'clientSecret' => false,

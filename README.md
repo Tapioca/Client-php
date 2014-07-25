@@ -81,6 +81,12 @@ First you need to create an instance of your Tapioca Client. You must choose you
     use Tapioca\Client as Tapioca;
     
 	$instance = Tapioca::client( 'rest', $config );
+	
+	$query    = $instance->query();
+	
+	$query->where(array('category' => 'TV'));
+	
+	$query->where()->add(array('type' => 'drama'));
 
 	$instance->query( array(
 			'select' => array('name', 'description'),
