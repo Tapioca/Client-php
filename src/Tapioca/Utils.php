@@ -19,21 +19,22 @@ class Utils
   /**
    * Navigate through array, looking for a particular index
    *
+   * @param array     where to search
    * @param string    The index sequence we are navigating down
    * @param mixed     value to return by default
    * @return mixed
    */
-  public function get( $key = null, $default = null )
+  public static function get( array $source, $key = null, $default = null )
   {
     // if no key were passed - return the orignal document
     if ( is_null( $key ) )
     {
-      return $this->_original;
+      return $source;
     }
     else
     {
       $path = explode('.', $key);
-      $data = $this->_original;
+      $data = $source;
 
       foreach($path as $k)
       {
@@ -51,8 +52,32 @@ class Utils
     }
   }
 
-  public function set( $key, $value )
-  {
-    
+  /**
+   * Deep merge of default config with user config
+   * $a will be result. $a will be edited. 
+   * It's to avoid a lot of copying in recursion
+   *
+   * @param   array    user settings
+   * @param   array    default config
+   * @return  Tapioca
+   */
+  public static function merge( &$a, $b )
+  { 
+    foreach( $b as $child => $value )
+    {
+      if( isset( $a[$child] ) )
+      { 
+        // merge if they are both arrays
+        if( is_array( $a[ $child ] ) && is_array( $value ) )
+        {
+            self::merge( $a[ $child ], $value );
+        }
+      }
+      else
+      {
+         // add if not exists
+        $a[ $child ] = $value;
+      }
+    }
   }
 }

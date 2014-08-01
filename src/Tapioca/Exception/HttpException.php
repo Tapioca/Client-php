@@ -14,4 +14,9 @@
 
 namespace Tapioca\Exception;
 
-class TapiocaCacheException extends \Exception {}
+/**
+ * Exception class
+ */
+class HttpException extends \Exception {}
+
+
