@@ -71,7 +71,7 @@ $query
 
 try
 {
-  $collection = $clientTapioca->collection( 'projets', $query, null, true ); //, $query );
+  $collection = $clientTapioca->collection( 'projets', $query );
 }
 catch( TapiocaException\ErrorResponseException $e )
 {

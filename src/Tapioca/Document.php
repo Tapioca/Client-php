@@ -85,7 +85,7 @@ class Document
   }
 
   /**
-   * Get document Tapioca's related  property based on kay
+   * Get document Tapioca's related  property based on key
    *
    * @param string    The index sequence we are navigating down
    * @param mixed     value to return by default
