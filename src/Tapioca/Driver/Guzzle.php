@@ -51,7 +51,7 @@ class Guzzle
     }
 
     $this->_inst    = $instance;
-    $this->_client  = new HttpClient( $this->_inst->getConfig('url') );
+    $this->_client  = new HttpClient( $this->_inst->getConfig('service') );
   }
 
   /**
@@ -107,21 +107,11 @@ class Guzzle
   /**
    * @{inheritDoc}
    *
-   * @throws Exception\ErrorResponseException
+   * @throws Exception\StateException
    */
-  public function find( $url, $query = null, $locale = null, $debug = false )
+  public function get( $url )
   {
-    if( is_array( $query ) )
-    {
-      $query =  json_encode( $query );
-    }
-
-    $request = $this->_client->get(array( $url . '{?token,query,locale,debug}', array(
-        'token'  => $this->_accessToken
-      , 'query'  => $query
-      , 'locale' => $locale
-      , 'debug'  => 'true'
-    )));
+    $request = $this->_client->get( $url );
 
     try
     {
@@ -140,5 +130,52 @@ class Guzzle
     {
       throw new Exception\ErrorResponseException( $e->getMessage() );
     }
+  }
+
+  /**
+   * @{inheritDoc}
+   *
+   * @throws Exception\ErrorResponseException
+   */
+  public function find( $url, $query = null, $locale = null, $debug = false )
+  {
+    if( is_array( $query ) )
+    {
+      $query =  json_encode( $query );
+    }
+
+    $asked = array(
+        'token'  => $this->_accessToken
+      , 'query'  => $query
+      , 'locale' => $locale
+      , 'debug'  => 'true'
+    );
+
+    if( !$response = $this->_inst->getCache( $this->_inst->getConfig('slug'), $asked ) )
+    {
+      $request = $this->_client->get( array( $url . '{?token,query,locale,debug}', $asked ) );
+echo 'no cache for '. $url."<br>";
+      try
+      {
+        $response = $request->send();
+      }
+      catch( GuzzleException\ClientErrorResponseException $e )
+      {
+        throw new Exception\ErrorResponseException( $e->getMessage() );
+      }
+
+      try 
+      {
+        $response = $response->json();
+      }
+      catch( \Guzzle\Common\Exception\RuntimeException $e )
+      {
+        throw new Exception\ErrorResponseException( $e->getMessage() );
+      }
+
+      $this->_inst->setCache( $this->_inst->getConfig('slug'), $asked, $response );
+    }
+
+    return $response;
   }
 }

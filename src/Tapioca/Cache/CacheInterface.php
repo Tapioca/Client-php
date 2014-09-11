@@ -41,7 +41,7 @@ abstract class CacheInterface
    */
   protected function genKey( $collection, $query )
   {
-    $key = $this->_slug  . $collection . serialize( $query );
+    $key = $this->_slug . $collection . serialize( $query );
     return $key;
   }
 

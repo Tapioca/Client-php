@@ -43,6 +43,14 @@ interface DriverInterface
     * @return void
     */
   public function setToken( $token );
+
+  /**
+   * Request service without oauth
+   *
+   * @param  string     $url          service to call
+   * @return object                   Returns asked page
+   */
+  public function get( $url );
   
   /**
    * Request API
