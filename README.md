@@ -48,20 +48,20 @@ Minimal configuration array:
 	    'slug'         => 'ours-roux' // you App's slug
 	  , 'clientId'     => '540e011b8597d'
 	  , 'clientSecret' => 'dd4111734d012012b271cdce8aded611'
-	  , 'fileStorage'  => 'http://www.tapioca.dev/library/ours-roux/' // basePath of file storage
+	  , 'fileStorage'  => 'http://www.yousite.com/file/path/' // public base path of your file storage
     );
 ```
   
-Complet configuration array include:
+Complet configuration array:
   
 
 ```php
 
 	$config = array(
         'slug'         => ...
-      , 'driver'       => 'Guzzle'
-	  , 'url'          => 'http://www.tapioca.io/' // server's URL, use your own if you run a Tapioca's server
-      , 'api'          => 'api/0.1/'
+      , 'driver'       => 'Guzzle' // cUrl client
+	  , 'url'          => 'http://www.tapioca.io/' // server's URL, change it if you run your own Tapioca server
+      , 'api'          => 'api/0.1/'  // API path + version
       , 'apiVersion'   => 0.1
       , 'clientId'     => ...
       , 'clientSecret' => ...
@@ -114,7 +114,7 @@ You can define a global <code>Locale</code> for the whole instance:
 
 ```php
 
-    $clientTapioca->setlocale('en_UK');
+    $clientTapioca->setlocale('fr_FR');
 ```
 
 You can override this on each query.
@@ -137,7 +137,7 @@ The easiest collection query, just pass the collection's <code>slug</code> as fi
 	}
 ```
 
-You can refine your query by passing a <code>Query</code> object as second parameter.
+You can refine your query by passing a <code>Query</code> object as second parameter.  
 _Complete list of query methods below._
 
 ```php
@@ -160,7 +160,7 @@ _Complete list of query methods below._
 	}
 ```
 
-These will return a Tapioca\Collection Object based on API result. 
+These will return a Tapioca\Collection object based on API result.  
 The iteration over this object will allow you to handle each documents as an object. 
 
 #### API result
@@ -203,7 +203,7 @@ The iteration over this object will allow you to handle each documents as an obj
 	                }
 	            },
 	            "title": "DO IT YOURSELF TORNADO KIT",
-	            "description": "Easily create your own tornadoes, anywhere, with the ACME Do It Yourself Tornado kit."
+	            "description": "Easily create your own tornadoes, anywhere, with the ACME Do It Yourself Tornado kit.",
 	            "image": {
 	                "id": "54146b3c7324c",
 	                "category": "image",
@@ -229,7 +229,7 @@ The iteration over this object will allow you to handle each documents as an obj
 ```php
 
     echo $collection->count() .' on '.$collection->total().' documents<br>';
-    // 1 on 11 documents
+    // 10 on 11 documents
 
     echo '<ul>';
     foreach( $collection as $product)
@@ -242,16 +242,6 @@ The iteration over this object will allow you to handle each documents as an obj
 
     }
     echo '</ul>';
-
-    // print first original document
-    print_r( $results->at(0)->get() ); 
-
-    echo $results->at(0)->get('title'); // get title value
-    echo $results->at(0)->get('image.filename');
-    echo $results->at(0)->get('undefinedField', 'set a default value');
-
-    // Debug 
-    print_r($results->queryLog());
 ```
 
 #### helpers
@@ -295,14 +285,14 @@ Count results:
     echo $collection->total(); // total count of documents matching the query without offset limit (for pagination)
 ```
 
-Your query:  
+Print your query paramters:  
 
 ```php
 
     $collection->query());
 ```
 
-Interpreted query by the server:  
+Print Interpreted query parameters by the server:  
 
 ```php
 
@@ -340,14 +330,15 @@ It will return a Tapioca\Document Object with almost the same helpers:
 
     echo $document->tapioca('ref');
     echo $document->tapioca('user.username');
-    echo $document->title.' || ';
+    echo $document->title;
     echo $document->description;
     echo $document->undefinedField; // return empty string
 ```
 
 ### Preview
 
-If passed <code>token</code> is valid, return a document's preview as <code>Tapioca\Document</code> object. <code>_tapioca</code> part is no reliable.
+If passed <code>token</code> is valid, return a document's preview as <code>Tapioca\Document</code> object.  
+<code>_tapioca</code> part is no reliable.
 
 ```php
     try
@@ -365,7 +356,7 @@ If passed <code>token</code> is valid, return a document's preview as <code>Tapi
 Get file's details from library.
 
 ```php
-	$file = $instance->library('tapioca-default-icon.jpg');
+	$file = $instance->library('13147c6867ab37876d');
 ```
 
 ### Clear Cache
