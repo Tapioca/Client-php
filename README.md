@@ -45,10 +45,10 @@ Minimal configuration array:
 ```php
 
     $config = array(
-	    'slug'         => 'ours-roux' // you App's slug
+	    'slug'         => 'acme' // you App's slug
 	  , 'clientId'     => '540e011b8597d'
 	  , 'clientSecret' => 'dd4111734d012012b271cdce8aded611'
-	  , 'fileStorage'  => 'http://www.yousite.com/file/path/' // public base path of your file storage
+	  , 'fileStorage'  => 'http://www.yousite.com/file/path/' // public path for your files storage
     );
 ```
   
@@ -229,7 +229,7 @@ The iteration over this object will allow you to handle each documents as an obj
 ```php
 
     echo $collection->count() .' on '.$collection->total().' documents<br>';
-    // 10 on 11 documents
+    // 1 on 11 documents
 
     echo '<ul>';
     foreach( $collection as $product)
@@ -244,7 +244,7 @@ The iteration over this object will allow you to handle each documents as an obj
     echo '</ul>';
 ```
 
-#### helpers
+#### Helpers
 
 You can directly access to <code>collection</code> items by there <code>ref</code> or there <code>index</code> in the result:
 
@@ -272,6 +272,7 @@ You can directly access to <code>collection</code> items by there <code>ref</cod
     }
     catch( TapiocaException\InvalidArgumentException $e )
     {
+      // if index is everything else than numeric
       echo $e->getMessage();
     }
 ```
@@ -281,7 +282,7 @@ You can directly access to <code>collection</code> items by there <code>ref</cod
 Count results:
 ```php
 
-    echo $collection->count(); // count of documents returned
+    echo $collection->count(); // total count of returned documents
     echo $collection->total(); // total count of documents matching the query without offset limit (for pagination)
 ```
 
@@ -292,7 +293,7 @@ Print your query paramters:
     $collection->query());
 ```
 
-Print Interpreted query parameters by the server:  
+Print interpreted query parameters by the server:  
 
 ```php
 
@@ -308,6 +309,8 @@ Dot notation to access to document property:
     echo $collection->at(0)->get('image.basename');                    // walk through the document object
     echo $collection->at(0)->tapioca('user.username');                 // walk through tapioca object
 ```
+
+<hr>
 
 ### Document
 
@@ -335,6 +338,8 @@ It will return a Tapioca\Document Object with almost the same helpers:
     echo $document->undefinedField; // return empty string
 ```
 
+<hr>
+
 ### Preview
 
 If passed <code>token</code> is valid, return a document's preview as <code>Tapioca\Document</code> object.  
@@ -351,6 +356,8 @@ If passed <code>token</code> is valid, return a document's preview as <code>Tapi
     }
 ```
 
+<hr>
+
 ### File
 
 Get file's details from library.
@@ -358,6 +365,8 @@ Get file's details from library.
 ```php
 	$file = $instance->library('13147c6867ab37876d');
 ```
+
+<hr>
 
 ### Clear Cache
 
