@@ -172,7 +172,7 @@ The iteration over this object will allow you to handle each documents as an obj
 	        "total": 11,
 	        "limit": 10,
 	        "offset": 10,
-	        "locale": "fr_FR",
+	        "locale": "en_GB",
 	        "dependencies": [
 	            {
 	                "dependency": "acme--library",
@@ -290,7 +290,7 @@ Print your query paramters:
 
 ```php
 
-    $collection->query());
+    $collection->query();
 ```
 
 Print interpreted query parameters by the server:  
@@ -304,10 +304,12 @@ Dot notation to access to document property:
 
 ```php
 
-    echo $collection->at(0)->get('title');                             // get title value
-    echo $collection->at(0)->get('undefinedField', 'a default value'); // return the default value
-    echo $collection->at(0)->get('image.basename');                    // walk through the document object
-    echo $collection->at(0)->tapioca('user.username');                 // walk through tapioca object
+    $doc = $collection->at(0);
+
+    echo $doc->get('title');                             // get title value
+    echo $doc->get('undefinedField', 'a default value'); // return the default value
+    echo $doc->get('image.basename');                    // walk through the document object
+    echo $doc->tapioca('user.username');                 // walk through tapioca object
 ```
 
 <hr>
