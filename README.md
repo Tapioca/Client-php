@@ -309,7 +309,7 @@ Dot notation to access to document property:
     echo $doc->get('title');                             // get title value
     echo $doc->get('undefinedField', 'a default value'); // return the default value
     echo $doc->get('image.basename');                    // walk through the document object
-    echo $doc->tapioca('user.username');                 // walk through tapioca object
+    echo $doc->tapioca('user.username');                 // walk through the document's tapioca property
 ```
 
 <hr>
@@ -329,7 +329,7 @@ Simply pass the collection <code>slug</code> and the document <code>ref</code>
     }
 ```
 
-It will return a Tapioca\Document Object with almost the same helpers:
+It will return a Tapioca\Document Object with almost the same helpers than a collection object:
 
 ```php
 
@@ -345,7 +345,7 @@ It will return a Tapioca\Document Object with almost the same helpers:
 ### Preview
 
 If passed <code>token</code> is valid, return a document's preview as <code>Tapioca\Document</code> object.  
-<code>_tapioca</code> part is no reliable.
+__<code>_tapioca</code> part is no reliable.__
 
 ```php
     try

@@ -84,6 +84,7 @@ class Client
         'slug'         => false
       , 'driver'       => 'Guzzle'
       , 'url'          => false
+      , 'api'          => 'api/0.1/'
       , 'apiVersion'   => 0.1
       , 'clientId'     => false
       , 'clientSecret' => false
@@ -98,6 +99,8 @@ class Client
           'path'         => false
         , 'extention'    => 'cache'
       )
+      // debug specific config
+      , 'memory'       => array()
     );
 
     Utils::merge( $config, $_defaults );
@@ -224,7 +227,7 @@ class Client
    */
   public function getCache( $collection, $query )
   {
-    $this->_cache->get( $collection, $query );
+    return $this->_cache->get( $collection, $query );
   }
 
   /**
@@ -286,7 +289,7 @@ class Client
       unset( $query['locale'] );
     }
 
-    $response = $this->_driver->find( $url, $query, $locale );
+    $response = $this->_driver->find( 'collection-' . $collection, $url, $query, $locale );
 
     return new Collection( $response, $query, $locale );
   }
@@ -303,7 +306,7 @@ class Client
   {
     $url = $this->baseUrl( 'document', $collection, $ref );
 
-    $response = $this->_driver->find( $url, null, $locale );
+    $response = $this->_driver->find( 'document-' . $collection, $url, null, $locale );
 
     return new Document( $response );
   }

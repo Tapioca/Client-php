@@ -148,12 +148,17 @@ class Collection
    */
   public function at( $index )
   {
+    if( !is_numeric( $index ) )
+    {
+      throw new Exception\InvalidArgumentException( 'index is not numeric' );
+    }
+
     if( isset( $this->_documents[ $index ] ) )
     {
       return $this->_documents[ $index ];
     }
     
-    return false;
+    throw new Exception\DocumentNotFoundException( 'Document not found' );
   }
 
   /**
@@ -169,6 +174,7 @@ class Collection
       return $this->at( $this->_index[ $ref ] );
     }
     
-    return false;
+    throw new Exception\DocumentNotFoundException( 'Document not found' );
+    
   }
 }

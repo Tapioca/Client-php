@@ -21,16 +21,11 @@ use Guzzle\Http\Exception as GuzzleException;
 class Guzzle 
   implements DriverInterface
 {
-
+  // required 
   /**
    * @var  object  Tapioca Client instance
    */
   private $_inst;
-
-  /**
-   * @var  object  HttpClient instance
-   */
-  private $_client;
 
   /**
    * @var  string access token
@@ -42,6 +37,22 @@ class Guzzle
    */
   private $_tokenExpire;
 
+  // class needs
+  /**
+   * @var  object  HttpClient instance
+   */
+  private $_client;
+
+  /**
+   * @var  object Guzzle request
+   */
+  private $_request;
+
+  /**
+   * Setup required variables
+   * plus Guzzle specific needs
+   *
+   */
   public function __construct( $instance )
   {
     // Throw exception if the instance arg isn't an instance of Tapioca\Client
@@ -57,44 +68,6 @@ class Guzzle
   /**
    * @{inheritDoc}
    *
-   * @throws Exception\StateException
-   */
-  public function getToken()
-  {
-    $config  = $this->_inst->getConfig();
-
-    $request = $this->_client->get(array('oauth{?client_id,client_secret}', array(
-        'client_id'     => $config['clientId']
-      , 'client_secret' => $config['clientSecret']
-    )));
-
-    try
-    {
-      $response = $request->send();
-    }
-    catch( GuzzleException\ClientErrorResponseException $e )
-    {
-      throw new Exception\ErrorResponseException( 'Client authentication failed' );
-    }
-
-    try 
-    {
-      $token = $response->json();
-    }
-    catch( \Guzzle\Common\Exception\RuntimeException $e )
-    {
-      throw new Exception\ErrorResponseException( $e->getMessage() );
-    }
-
-    $this->setToken( $token );
-
-    return $token;
-  }
-
-  /**
-   * @{inheritDoc}
-   *
-   * @throws Exception\StateException
    */
   public function setToken( $token )
   {
@@ -107,18 +80,93 @@ class Guzzle
   /**
    * @{inheritDoc}
    *
-   * @throws Exception\StateException
+   */
+  public function getToken()
+  {
+    $config  = $this->_inst->getConfig();
+
+    // build request
+    $this->_request = $this->_client->get(array('oauth{?client_id,client_secret}', array(
+        'client_id'     => $config['clientId']
+      , 'client_secret' => $config['clientSecret']
+    )));
+
+    // call server
+    $token = $this->doCall();
+
+    // save token
+    $this->setToken( $token );
+
+    return $token;
+  }
+
+  /**
+   * @{inheritDoc}
+   *
    */
   public function get( $url )
   {
-    $request = $this->_client->get( $url );
+    // build request
+    $this->_request = $this->_client->get( $url );
 
+    return $this->doCall();
+  }
+
+  /**
+   * @{inheritDoc}
+   *
+   */
+  public function find( $context, $url, $query = null, $locale = null, $debug = false )
+  {
+    if( is_array( $query ) )
+    {
+      $query =  json_encode( $query );
+    }
+
+    $asked = array(
+        'query'  => $query
+      , 'locale' => $locale
+      , 'debug'  => 'true'
+    );
+
+    if( !$response = $this->_inst->getCache( $context, $asked ) )
+    {
+      // if no result append current token
+      $askedPlusToken = array(
+        'token'  => $this->_accessToken
+      ) + $asked;
+
+      // build request
+      $this->_request = $this->_client->get( array( $url . '{?token,query,locale,debug}', $askedPlusToken ) );
+
+      // call server
+      $response = $this->doCall();
+
+      // store response in cache
+      $this->_inst->setCache( $context, $asked, $response );
+    }
+
+    return $response;
+  }
+
+  /**
+   * Generic Guzzle request
+   *
+   * @throws Exception\ErrorResponseException
+   */
+  private function doCall()
+  {
     try
     {
-      $response = $request->send();
+      $response = $this->_request->send();
     }
     catch( GuzzleException\ClientErrorResponseException $e )
     {
+      throw new Exception\ErrorResponseException( $e->getMessage() );
+    }
+    catch( GuzzleException\BadResponseException $e )
+    {
+exit( 'Exception');
       throw new Exception\ErrorResponseException( $e->getMessage() );
     }
 
@@ -130,52 +178,5 @@ class Guzzle
     {
       throw new Exception\ErrorResponseException( $e->getMessage() );
     }
-  }
-
-  /**
-   * @{inheritDoc}
-   *
-   * @throws Exception\ErrorResponseException
-   */
-  public function find( $url, $query = null, $locale = null, $debug = false )
-  {
-    if( is_array( $query ) )
-    {
-      $query =  json_encode( $query );
-    }
-
-    $asked = array(
-        'token'  => $this->_accessToken
-      , 'query'  => $query
-      , 'locale' => $locale
-      , 'debug'  => 'true'
-    );
-
-    if( !$response = $this->_inst->getCache( $this->_inst->getConfig('slug'), $asked ) )
-    {
-      $request = $this->_client->get( array( $url . '{?token,query,locale,debug}', $asked ) );
-echo 'no cache for '. $url."<br>";
-      try
-      {
-        $response = $request->send();
-      }
-      catch( GuzzleException\ClientErrorResponseException $e )
-      {
-        throw new Exception\ErrorResponseException( $e->getMessage() );
-      }
-
-      try 
-      {
-        $response = $response->json();
-      }
-      catch( \Guzzle\Common\Exception\RuntimeException $e )
-      {
-        throw new Exception\ErrorResponseException( $e->getMessage() );
-      }
-
-      $this->_inst->setCache( $this->_inst->getConfig('slug'), $asked, $response );
-    }
-
-    return $response;
   }
 }

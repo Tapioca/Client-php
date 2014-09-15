@@ -16,6 +16,23 @@ namespace Tapioca\Driver;
 
 interface DriverInterface
 {
+  // to declare in implemented class
+
+  /**
+   * @var  object  Tapioca Client instance
+   */
+  // private $_inst;
+
+  /**
+   * @var  string access token
+   */
+  // private $_accessToken;
+
+  /**
+   * @var  int token expire timestamp
+   */
+  // private $_tokenExpire;
+
   /**
     * Get oauth access token
     *
@@ -45,7 +62,8 @@ interface DriverInterface
   public function setToken( $token );
 
   /**
-   * Request service without oauth
+   * Request services who don't need oauth or cache
+   * e.g.: preview
    *
    * @param  string     $url          service to call
    * @return object                   Returns asked page
@@ -55,10 +73,11 @@ interface DriverInterface
   /**
    * Request API
    *
+   * @param  string     $context      call context, 'collection-slug', 'document-slug' or 'library'
    * @param  string     $url          service to call
    * @param  mixed      $query        a document ref or a Query instance
    * @param  string     $locale       asked locale
-   * @return object                   Returns Document or Collection object
+   * @return object                   Returns a Collection or a Document or a Library object
    */
-  public function find( $url, $query = null, $locale = null );
+  public function find( $context, $url, $query = null, $locale = null );
 }

@@ -33,6 +33,17 @@ abstract class CacheInterface
   private $_expire = 3600;
 
   /**
+   * Constructor
+   *
+   * @access public
+   * @param  string   App's slug
+   * @param  string   cache directory
+   * @throws TapiocaCacheException
+   * @return void
+   */
+  public function __construct( $slug, $prefix, $expiration = 3600, $options ) {}
+
+  /**
    * Merge App's slug + collection name + query
    * to get an unique MD5 hash as cache key
    *
