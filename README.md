@@ -312,6 +312,15 @@ Dot notation to access to document property:
     echo $doc->tapioca('user.username');                 // walk through the document's tapioca property
 ```
 
+#### Single document collection:
+
+Use the <code>at</code> method to access to the page
+
+```php
+
+    $page = $collection->at(0);
+```
+
 <hr>
 
 ### Document
