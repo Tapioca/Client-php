@@ -4,7 +4,7 @@ This page is a draft of upcoming Tapioca's client in PHP. Feel free to contribut
 
 ## Requirements
 
-Dedicated machine with root access is recommended. PHP 5.3 (or higher) is required.
+PHP 5.3.3 (or higher) is required.
 
 ## Installing via Composer
 
@@ -40,101 +40,199 @@ You can find out more on how to install Composer, configure autoloading, and oth
 
 ## Configuration
 
-Complet configuration array:
+Minimal configuration array:
 
 ```php
+
+    $config = array(
+	    'slug'         => 'acme' // you App's slug
+	  , 'clientId'     => '540e011b8597d'
+	  , 'clientSecret' => 'dd4111734d012012b271cdce8aded611'
+	  , 'fileStorage'  => 'http://www.yousite.com/file/path/' // public path for your files storage
+    );
+```
+  
+Complet configuration array:
+  
+
+```php
+
 	$config = array(
-		'driver'       => 'rest',
-		'slug'         => 'acme',
-        'clientId'     => '8Svjq5etHjDgBwmr',
-        'clientSecret' => '3ad6d44a44e6b253a911eb1bd88db210a6d63b91b90036ffdf8bccb539c15d7e',
-        'url'          => 'http://tapioca.io/api/',
-        'fileStorage'  => 'http://tapioca.io/files/',
-		'mongo'        => array(
-            'dsn'          => 'mongodb://user:pass@localhost:27017/databaseName',
-            'persist'      => true,
-            'persist_key'  => 'tapioca',
-            'replica_set'  => false,
-		),
-		'cache'  => array(
-			'ttl'  => 3600,
-			'path' => '/path/to/folder',
-		)
+        'slug'         => ...
+      , 'driver'       => 'Guzzle' // cUrl client
+	  , 'url'          => 'http://www.tapioca.io/' // server's URL, change it if you run your own Tapioca server
+      , 'api'          => 'api/0.1/'  // API path + version
+      , 'apiVersion'   => 0.1
+      , 'clientId'     => ...
+      , 'clientSecret' => ...
+      , 'fileStorage'  => ...
+      , 'cache'        => array(
+            'strategy'     => 'filesystem' // cache method
+          , 'ttl'          => 3600 // cache time to live
+          , 'prefix'       => 'tapioca::' // cache key prefix
+        )
+      // filesystem specific config
+      , 'filesystem'   => array(
+          'path'         => __DIR__ . '/cache/' // cache files path
+        , 'extention'    => 'cache' // cache file extenTion
+      )
+      // debug specific config
+      , 'memory'       => array()
 	);
 ```
 
-### Details
+## Instance
 
-- `driver`: which driver you want to use with `GET` method. Choose between `Rest` or `MongoDb`. Rest need `curl` to be enable.
-- `slug`: your Tapioca's application name. 
-- `mongo`: data to build MongoDB's DSN -- __NOT DEFINITVE__
-- `cache`: store query results to your filesystem. Cache path need to be writable.
+Create a new instance based on <code>$config</code> array.
 
-## Query (draft)
+```php
+
+	include('vendor/autoload.php');
+	
+	use Tapioca\Client as Tapioca;
+	use Tapioca\Query as Query;
+	use Tapioca\Exception as TapiocaException;
+	use Tapioca\Cache\Filesystem as Cache;
+	
+	try
+	{
+	  $clientTapioca = Tapioca::client( $config );
+	}
+	catch( TapiocaException\InvalidArgumentException $e )
+	{
+	  exit($e->getMessage());
+	}
+	catch( TapiocaException\ErrorResponseException $e )
+	{
+	  exit($e->getMessage());
+	}
+```
+
+## Locale
+
+You can define a global <code>Locale</code> for the whole instance: 
+
+```php
+
+    $clientTapioca->setlocale('fr_FR');
+```
+
+You can override this on each query.
+
+## Query
 
 ### Collection
 
-First you need to create an instance of your Tapioca Client. You must choose your `GET` driver. Then you can query your collections by passing an array to the `query` method or use the shortcuts [methods](#methods).
+The easiest collection query, just pass the collection's <code>slug</code> as first argument: 
 
 ```php
 
-    use Tapioca\Client as Tapioca;
-    
-	$instance = Tapioca::client( 'rest', $config );
-	
-	$query    = $instance->query();
-	
-	$query->where(array('category' => 'TV'));
-	
-	$query->where()->add(array('type' => 'drama'));
-
-	$instance->query( array(
-			'select' => array('name', 'description'),
-			'where'  => array('category' => 'TV'),
-			'sort'   => array('name' => 'DESC'),
-			'limit'  => 10,
-			'skip'   => 20,
-		));
-	
-	// OR
-
-	$instance->select( array('name', 'description') );
-	$instance->where( array('category' => 'TV') );
-	$instance->sort( array('name' => 'DESC') );
-	$instance->limit( 10 )
-	$instance->skip( 20 );
-
-	$results = $instance->collection('products');
-
+	try
+	{
+	  $collection = $clientTapioca->collection( 'acme' );
+	}
+	catch( TapiocaException\ErrorResponseException $e )
+	{
+	  exit($e->getMessage());
+	}
 ```
 
-These will return a Tapioca\Collection Object based on API result. 
-Iterate over these object will allow you to handle each documents. 
+You can refine your query by passing a <code>Query</code> object as second parameter.  
+_Complete list of query methods below._
+
+```php
+
+	$query = new Query();
+
+	$query
+		->select( 'title', 'desc', 'image' )
+		->setlocale('en_GB') // override global locale
+		->limit(10)
+		->skip(10);
+
+	try
+	{
+	  $collection = $clientTapioca->collection( 'acme', $query );
+	}
+	catch( TapiocaException\ErrorResponseException $e )
+	{
+	  exit($e->getMessage());
+	}
+```
+
+These will return a Tapioca\Collection object based on API result.  
+The iteration over this object will allow you to handle each documents as an object. 
+
+#### API result
 
 ```json
-    {
-        "total": 21,
-        "skip": 20,
-        "limit": 10,
-        "results": [
-            {
-                "_ref": "50b08700b322a",
-                "title": "hello",
-                "description": "world",
-                "nested": {
-                    "value": "bye"
-                }
-            }
-        ]
-    }
+
+	{
+	    "_tapioca": {
+	        "total": 11,
+	        "limit": 10,
+	        "offset": 10,
+	        "locale": "en_GB",
+	        "dependencies": [
+	            {
+	                "dependency": "acme--library",
+	                "path": "image-seul"
+	            }
+	        ]
+	    },
+	    "documents": [
+	        {
+	            "_tapioca": {
+	                "ref": "5414bcc54a15a",
+	                "revision": "5414bfbb06eef",
+	                "published": true,
+	                "created": 1410645189,
+	                "updated": 1410645947,
+	                "user": {
+	                    "id": 3,
+	                    "email": "michael@test.zz",
+	                    "username": "Michael",
+	                    "avatar": "http://www.tapioca.io/avatars/3.jpg",
+	                    "url": "http://www.tapioca.io/api/0.1/user/3?token=Twa8NwYgJ7PLOfTQ7QgQ0VRJxOFzb8AMcPnNYf1U&",
+	                    "role": "admin"
+	                },
+	                "locale": "fr_FR",
+	                "resources": {
+	                    "url": "http://www.tapioca.io/api/0.1/ours-roux/document/test/5414bcc54a15a?token=Twa8NwYgJ7PLOfTQ7QgQ0VRJxOFzb8AMcPnNYf1U&",
+	                    "revisions": "http://www.tapioca.io/api/0.1/ours-roux/document/test/revisions/5414bcc54a15a?token=Twa8NwYgJ7PLOfTQ7QgQ0VRJxOFzb8AMcPnNYf1U&"
+	                }
+	            },
+	            "title": "DO IT YOURSELF TORNADO KIT",
+	            "description": "Easily create your own tornadoes, anywhere, with the ACME Do It Yourself Tornado kit.",
+	            "image": {
+	                "id": "54146b3c7324c",
+	                "category": "image",
+	                "filename": "54146b3c7324c.jpg",
+	                "extension": "jpg",
+	                "basename": "tornado",
+	                "length": 41290,
+	                "height": 640,
+	                "width": 640
+	            }
+	        },
+	        {
+	            "_tapioca": { […] },
+	            "title": "ACME DISINTEGRATING PISTOL",
+	            "desccription": "ACME Disintegrating Pistols, when they disintegrate, they distinegrate!"
+	        }
+	    ]
+	}
 ```
 
+#### Client usage
+
 ```php
-    echo $results->count() .' on '.$results->total().' documents<br>';
-    // 1 on 21 documents
+
+    echo $collection->count() .' on '.$collection->total().' documents<br>';
+    // 1 on 11 documents
 
     echo '<ul>';
-    foreach( $results as $product)
+    foreach( $collection as $product)
     {
         echo '<li>';
         echo $product->title.' || ';
@@ -144,59 +242,148 @@ Iterate over these object will allow you to handle each documents.
 
     }
     echo '</ul>';
-
-    // print original document
-    print_r( $results->at(0)->get() ); 
-
-    echo $results->at(0)->get('title'); // get title value
-    echo $results->at(0)->get('nested.value');
-    echo $results->at(0)->get('undefinedField', 'set a default value');
-
-    // Debug 
-    print_r($results->queryLog());
 ```
+
+#### Helpers
+
+You can directly access to <code>collection</code> items by there <code>ref</code> or there <code>index</code> in the result:
+
+```php
+
+    try
+    {
+      // print the document's title with the '5414bcc54a15a' _tapioca.ref
+      print_r( $collection->get( '5414bcc54a15a' )->get('title') ); 
+    }
+    catch( TapiocaException\DocumentNotFoundException $e )
+    {
+      echo $e->getMessage();
+    }
+
+
+    try
+    {
+      // print the second document
+      print_r( $collection->at( 1 )->get() );
+    }
+    catch( TapiocaException\DocumentNotFoundException $e )
+    {
+      echo $e->getMessage();
+    }
+    catch( TapiocaException\InvalidArgumentException $e )
+    {
+      // if index is everything else than numeric
+      echo $e->getMessage();
+    }
+```
+
+#### Debug
+
+Count results:
+```php
+
+    echo $collection->count(); // total count of returned documents
+    echo $collection->total(); // total count of documents matching the query without offset limit (for pagination)
+```
+
+Print your query paramters:  
+
+```php
+
+    $collection->query();
+```
+
+Print interpreted query parameters by the server:  
+
+```php
+
+    $collection->debug();
+```
+
+Dot notation to access to document property:
+
+```php
+
+    $doc = $collection->at(0);
+
+    echo $doc->get('title');                             // get title value
+    echo $doc->get('undefinedField', 'a default value'); // return the default value
+    echo $doc->get('image.basename');                    // walk through the document object
+    echo $doc->tapioca('user.username');                 // walk through the document's tapioca property
+```
+
+#### Single document collection:
+
+Use the <code>at</code> method to access to the page
+
+```php
+
+    $page = $collection->at(0);
+```
+
+<hr>
 
 ### Document
 
-Select title field of `products`'s document form _ref `508278e811a3`, in english.
+Simply pass the collection <code>slug</code> and the document <code>ref</code>
 
 ```php
-    $instance->setLocale('en_UK');
-
-    $instance->query('select', array('title') );
-    $document = $instance->document('products', '508278e811a32');
+    try
+    {
+      $document = $clientTapioca->document( 'acme', '5414bcc54a15a' );
+    }
+    catch( TapiocaException\ErrorResponseException $e )
+    {
+      echo $e->getMessage();
+    }
 ```
 
-will return a Tapioca\Document Object.
+It will return a Tapioca\Document Object with almost the same helpers than a collection object:
 
-```json
-	{
-	    "_ref": "508278e811a32",
-	    "title": "foo bar"
-	}
+```php
+
+    echo $document->tapioca('ref');
+    echo $document->tapioca('user.username');
+    echo $document->title;
+    echo $document->description;
+    echo $document->undefinedField; // return empty string
 ```
+
+<hr>
 
 ### Preview
 
-Display document's preview.
+If passed <code>token</code> is valid, return a document's preview as <code>Tapioca\Document</code> object.  
+__<code>_tapioca</code> part is no reliable.__
 
 ```php
-	$preview = $instance->preview('50dad548c68dee2802000000');
+    try
+    {
+      $preview = $clientTapioca->preview( 'fb1e19a3991780e4513147c6867ab37876d6a0ca' );
+    }
+    catch( TapiocaException\ErrorResponseException $e )
+    {
+      echo $e->getMessage();
+    }
 ```
+
+<hr>
 
 ### File
 
 Get file's details from library.
 
 ```php
-	$file = $instance->library('tapioca-default-icon.jpg');
+	$file = $instance->library('13147c6867ab37876d');
 ```
+
+<hr>
 
 ### Clear Cache
 
 To clear all cache files
 
 ```php
-    $resp = $instance->clearCache();
+    $resp = $clientTapioca->clearCache();
 ```
 

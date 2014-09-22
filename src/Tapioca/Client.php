@@ -16,7 +16,7 @@ namespace Tapioca;
 
 class Client 
 {
-  const INST_NAME = 'defautl';
+  const INST_NAME = 'default';
 
   /**
    * @var  Library version
@@ -46,7 +46,7 @@ class Client
   /**
    * @var  object  Cache instance
    */
-  protected $_cahe;
+  protected $_cache;
 
   /**
    * @var  string  Local globally defined
@@ -84,6 +84,7 @@ class Client
         'slug'         => false
       , 'driver'       => 'Guzzle'
       , 'url'          => false
+      , 'api'          => 'api/0.1/'
       , 'apiVersion'   => 0.1
       , 'clientId'     => false
       , 'clientSecret' => false
@@ -98,6 +99,8 @@ class Client
           'path'         => false
         , 'extention'    => 'cache'
       )
+      // debug specific config
+      , 'memory'       => array()
     );
 
     Utils::merge( $config, $_defaults );
@@ -161,6 +164,8 @@ class Client
       throw new Exception\InvalidArgumentException( $e->getMessage() );
     }
 
+    $config['service'] = $config['url'] . $config['api'];
+
     // store config
     $this->_config = $config;
 
@@ -216,6 +221,26 @@ class Client
   }
 
   /**
+   * Access Cache 
+   *
+   * @return void
+   */
+  public function getCache( $collection, $query )
+  {
+    return $this->_cache->get( $collection, $query );
+  }
+
+  /**
+   * Set Cache 
+   *
+   * @return void
+   */
+  public function setCache( $collection, $query, $data )
+  {
+    $this->_cache->set( $collection, $query, $data );
+  }
+
+  /**
    * return formated API URL
    *
    * @param  string  API request, `document`, `library` or `preview`
@@ -251,18 +276,20 @@ class Client
     $locale = $this->_locale;
     $log    = null;
 
-    if( $query instanceof Query )
+    if( !$query instanceof Query )
     {
-      $query = $log = $query->getQuery();
-
-      if( !is_null( $query['locale'] ) )
-      {
-        $locale = $query['locale'];
-        unset( $query['locale'] );
-      }
+      $query = new Query();
     }
 
-    $response = $this->_driver->find( $url, $query, $locale );
+    $query = $log = $query->getQuery();
+
+    if( !is_null( $query['locale'] ) )
+    {
+      $locale = $query['locale'];
+      unset( $query['locale'] );
+    }
+
+    $response = $this->_driver->find( 'collection-' . $collection, $url, $query, $locale );
 
     return new Collection( $response, $query, $locale );
   }
@@ -279,7 +306,7 @@ class Client
   {
     $url = $this->baseUrl( 'document', $collection, $ref );
 
-    $response = $this->_driver->find( $url, null, $locale );
+    $response = $this->_driver->find( 'document-' . $collection, $url, null, $locale );
 
     return new Document( $response );
   }
@@ -316,14 +343,15 @@ class Client
    *
    * @param  string  Collection's slug
    * @param  object  Preview's token
-   * @return object  a Preview instance
+   * @return object  a Document instance
    * @throws Exception\ErrorResponseException
    */
   public function preview( $token )
   {
-    $url      = $this->baseUrl( 'preview', $collection, $token );
-    $response = $this->_driver->find( $url );
+    $url =  $this->_config['url'] . 'preview/' . $token;
 
-    return new Preview( $response, $query, $locale );
+    $response = $this->_driver->get( $url );
+
+    return new Document( $response );
   }
 }

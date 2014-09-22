@@ -34,10 +34,16 @@ $config = array(
   , 'filesystem'   => array(
       'path' => __DIR__ . '/cache/'
     )
+  // , 'cache'        => array(
+  //       'strategy'     => 'memory'
+  //   )
   // , 'cache' => array(
   //     'ttl' => 5
   //   )
 );
+
+$docRef  = '5414de53cb09e'; // '5414bcc54a15a';
+$colSlug = 'test';  //'deps'
 
 try
 {
@@ -57,8 +63,12 @@ catch( TapiocaException\ErrorResponseException $e )
 $query = new Query();
 
 $query
+  ->limit(1)
+  ->skip(0);
+
   // ->select( 'title', 'catagory' )
   // ->exclude('desc')
+
   ->limit(2)
   ->skip(0)
   ->setlocale('fr_FR')
@@ -72,7 +82,7 @@ $query
 
 try
 {
-  $collection = $clientTapioca->collection( 'projects', $query );
+  $collection = $clientTapioca->collection( $colSlug, $query );
 }
 catch( TapiocaException\ErrorResponseException $e )
 {
@@ -118,6 +128,9 @@ print_r($collection->debug());
 echo $collection->count() .' on '.$collection->total().' documents<br>';
 // 1 on 21 documents
 
+if( !$collection->count() )
+  exit;
+
 echo '<ul>';
 foreach( $collection as $document)
 {
@@ -131,6 +144,7 @@ foreach( $collection as $document)
     echo '</li>';
 }
 echo '</ul>';
+
 exit;
 // print original document
 print_r( $collection->at(0)->get() ); 
@@ -139,21 +153,58 @@ echo '<br>';
 print_r( $collection->get( '53bbb157a5226' )->get('title') ); 
 echo '<br>';
 
+try
+{
+  // print original document
+  print_r( $collection->at( 0 )->get() ); 
+  echo '<br>';
+}
+catch( TapiocaException\DocumentNotFoundException $e )
+{
+  // uncomment to get error details
+  echo $e->getMessage();
+  exit();
+}
+catch( TapiocaException\InvalidArgumentException $e )
+{
+  // uncomment to get error details
+  echo $e->getMessage();
+  exit();
+}
+
+try
+{
+  // print original document
+  // 5414bb88df94d
+  print_r( $collection->get( $docRef )->get('title') ); 
+  echo '<br>';
+}
+catch( TapiocaException\DocumentNotFoundException $e )
+{
+  // uncomment to get error details
+  echo $e->getMessage();
+  // exit();
+}
+
+
 echo $collection->at(0)->get('title'); // get title value
 echo ', ';
 echo $collection->at(0)->get('undefinedField', 'a default value');
 echo ' by ';
 echo $collection->at(0)->get('_tapioca.user.username');
-
+// exit;
 echo '<hr>';
 
 try
 {
-  $document = $clientTapioca->document( 'projets', '53bbd1166444d' );
+  $document = $clientTapioca->document( $colSlug, $docRef );
 }
 catch( TapiocaException\ErrorResponseException $e )
 {
-  exit($e->getMessage());
+echo 'doucment ?<br>';
+  // uncomment to get error details
+  echo $e->getMessage();
+  // exit('404');
 }
 
 var_dump( $document );
@@ -163,3 +214,24 @@ echo $document->tapioca('user.username') . ' || ';
 echo $document->title.' || ';
 echo $document->desc;
 echo $document->undefinedField; // return empty string
+
+
+echo '<hr>';
+// exit;
+// Preview
+echo 'preview<br>';
+try
+{
+  $preview = $clientTapioca->preview( 'fb1e19a3991780e4513147c6867ab37876d6a0ca' );
+  var_dump( $preview );
+}
+catch( TapiocaException\ErrorResponseException $e )
+{
+  // uncomment to get error details
+  // echo $e->getMessage();
+  exit('preview 404');
+}
+echo $preview->tapioca('ref') . ' || ';
+echo $preview->tapioca('user.username') . ' || ';
+echo $preview->title.' || ';
+exit();

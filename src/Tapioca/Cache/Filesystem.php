@@ -73,7 +73,6 @@ class Filesystem
 
   public function set( $collection, $query, $data )
   {
-
     $key = $this->genKey( $collection, $query );
 
     $cache_path = $this->_name( $key );
@@ -115,10 +114,12 @@ class Filesystem
 
     $cache_path = $this->_name( $key );
 
-    if( !@file_exists( $cache_path ) )
+    if( !file_exists( $cache_path ) )
     {
       return false;
     }
+
+    // echo '<br>';
 
     if( filemtime( $cache_path ) < ( time() - $this->_expire ) )
     {
