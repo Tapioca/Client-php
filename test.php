@@ -28,8 +28,8 @@ echo "<pre>";
 $config = array(
     'slug'         => 'ours-roux'
   , 'url'          => 'http://www.tapioca.dev/api/0.1/'
-  , 'clientId'     => '53baa0846eccf'
-  , 'clientSecret' => 'b31f5fa0cdb3be252a18a2db0e4b7c60'
+  , 'clientId'     => '541172b8a34a7'
+  , 'clientSecret' => '5731645835eea2e0ae4bdd6ca6faca54'
   , 'fileStorage'  => 'http://www.tapioca.dev/library/ours-roux/'
   , 'filesystem'   => array(
       'path' => __DIR__ . '/cache/'
@@ -52,7 +52,7 @@ catch( TapiocaException\ErrorResponseException $e )
   exit($e->getMessage());
 }
 
-$clientTapioca->setlocale('en_UK');
+// $clientTapioca->setlocale('en_UK');
 
 $query = new Query();
 
@@ -62,21 +62,53 @@ $query
   ->limit(2)
   ->skip(0)
   ->setlocale('fr_FR')
-  ->orderBy('_tapioca.created', -1)
-  ->where('_tapioca.published', true)
-  ->orWhereLte('_tapioca.created', 1404809559);
+  ->where('nom', 'paolo');
+  // ->orderBy('_tapioca.created', -1)
+  // ->where('_tapioca.published', true)
+  // ->orWhereLte('_tapioca.created', 1404809559);
 
 // echo json_encode($query->getQuery());
 // exit;
 
 try
 {
-  $collection = $clientTapioca->collection( 'projets', $query );
+  $collection = $clientTapioca->collection( 'projects', $query );
 }
 catch( TapiocaException\ErrorResponseException $e )
 {
   exit($e->getMessage());
 }
+
+$query = new Query();
+
+$query
+  // ->select( 'title', 'catagory' )
+  // ->exclude('desc')
+  ->limit(2)
+  ->skip(0)
+  ->setlocale('fr_FR')
+  ->where('nom', 'marc');
+  // ->orderBy('_tapioca.created', -1)
+  // ->where('_tapioca.published', true)
+  // ->orWhereLte('_tapioca.created', 1404809559);
+
+// echo json_encode($query->getQuery());
+// exit;
+
+try
+{
+  $collection2 = $clientTapioca->collection( 'projects', $query );
+}
+catch( TapiocaException\ErrorResponseException $e )
+{
+  exit($e->getMessage());
+}
+
+foreach( $collection2 as $document)
+{
+  $collection->add( $document );
+}
+
 
 // Debug 
 print_r($collection->query());
@@ -92,13 +124,14 @@ foreach( $collection as $document)
     echo '<li>';
     echo $document->tapioca('ref') . ' || ';
     echo $document->tapioca('user.username') . ' || ';
+    echo $document->nom.' || ';
     echo $document->title.' || ';
     echo $document->desc;
     echo $document->undefinedField; // return empty string
     echo '</li>';
 }
 echo '</ul>';
-
+exit;
 // print original document
 print_r( $collection->at(0)->get() ); 
 echo '<br>';

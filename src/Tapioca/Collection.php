@@ -73,6 +73,19 @@ class Collection
     $this->_debug = $hash['debug'];
   }
 
+  public function add(  $document  )
+  {
+    ++$this->_total;
+    ++$this->_count;
+
+    if ( !$document instanceof Document )
+      $document = new Document( $document );
+
+    $this->_documents[] = $document;
+
+    $this->_index[ $document->get('_tapioca.ref') ] = $this->_total;
+  }
+
   public function rewind()
   {
     reset( $this->_documents );
