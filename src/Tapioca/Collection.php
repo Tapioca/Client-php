@@ -73,7 +73,15 @@ class Collection
     $this->_debug = $hash['debug'];
   }
 
-  public function add(  $document  )
+  /**
+   * Add a new document to the collection
+   * Increment _total and _count
+   *
+   * @access public
+   * @param  mixed   a document array or a document object
+   * @return void
+   */
+  public function add( $document )
   {
     ++$this->_total;
     ++$this->_count;
@@ -84,34 +92,6 @@ class Collection
     $this->_documents[] = $document;
 
     $this->_index[ $document->get('_tapioca.ref') ] = $this->_total;
-  }
-
-  public function rewind()
-  {
-    reset( $this->_documents );
-  }
-
-  public function current()
-  {
-    return current( $this->_documents);
-  }
-
-  public function key()
-  {
-    return key( $this->_documents );
-  }
-
-  public function next()
-  {
-    return next( $this->_documents );
-  }
-
-  public function valid()
-  {
-    $key      = key($this->_documents);
-    $document = ($key !== NULL && $key !== FALSE);
-
-    return $document;
   }
 
   /**
@@ -190,4 +170,35 @@ class Collection
     throw new Exception\DocumentNotFoundException( 'Document not found' );
     
   }
+
+  // Iterator methods
+
+  public function rewind()
+  {
+    reset( $this->_documents );
+  }
+
+  public function current()
+  {
+    return current( $this->_documents);
+  }
+
+  public function key()
+  {
+    return key( $this->_documents );
+  }
+
+  public function next()
+  {
+    return next( $this->_documents );
+  }
+
+  public function valid()
+  {
+    $key      = key($this->_documents);
+    $document = ($key !== NULL && $key !== FALSE);
+
+    return $document;
+  }
+
 }

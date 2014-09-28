@@ -15,7 +15,7 @@ The recommended way to install Tapioca's PHP Clieny is through [Composer](http:/
 ```json
     {
         "require": {
-            "tapioca/client-php": "dev-master"
+            "tapioca/client-php": "dev-dev"
         }
     }
 ```
@@ -218,7 +218,7 @@ The iteration over this object will allow you to handle each documents as an obj
 	        {
 	            "_tapioca": { […] },
 	            "title": "ACME DISINTEGRATING PISTOL",
-	            "desccription": "ACME Disintegrating Pistols, when they disintegrate, they distinegrate!"
+	            "description": "ACME Disintegrating Pistols, when they disintegrate, they distinegrate!"
 	        }
 	    ]
 	}
