@@ -241,6 +241,16 @@ class Client
   }
 
   /**
+   * Clear Cache 
+   *
+   * @return void
+   */
+  public function clearCache( $key = null )
+  {
+    $this->_cache->clear( $key );
+  }
+
+  /**
    * return formated API URL
    *
    * @param  string  API request, `document`, `library` or `preview`
