@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Tapioca: Schema Driven Data Engine 
+ * Tapioca: Schema Driven Data Engine
  * PHP Client.
  *
  * @package   Tapioca
@@ -18,10 +18,10 @@ use Tapioca\Exception;
 use Guzzle\Http\Client as HttpClient;
 use Guzzle\Http\Exception as GuzzleException;
 
-class Guzzle 
+class Guzzle
   implements DriverInterface
 {
-  // required 
+  // required
   /**
    * @var  object  Tapioca Client instance
    */
@@ -166,11 +166,10 @@ class Guzzle
     }
     catch( GuzzleException\BadResponseException $e )
     {
-exit( 'Exception');
       throw new Exception\ErrorResponseException( $e->getMessage() );
     }
 
-    try 
+    try
     {
       return $response->json();
     }
